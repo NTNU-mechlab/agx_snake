@@ -69,15 +69,29 @@ def build_scene():  # application entry point. Do not change method signature
 # gets invoked when pressing 2 in the agxViewer
 def build_scene_2():
 
-    app = agx_helper.AgxApp(num_threads=2)
-    app.register_additional_scenes('build_scene_2')
+    from snake_module2 import Snake
+    from snake_module2 import SineMotion
 
-    box_body = agx.RigidBody(agxCollide.Geometry(agxCollide.Box(0.5, 0.5, 0.5)))
-    app.create_visual(box_body, diffuse_color=agxRender.Color.Yellow())
-    app.add(box_body)
+    app = agx_helper.AgxApp(2)
+    app.create_sky()
 
-    plane_body = agx.RigidBody(agxCollide.Geometry(agxCollide.Box(10, 10, 0.1)))
-    plane_body.setPosition(0, 0, -5)
-    plane_body.setMotionControl(agx.RigidBody.STATIC)
-    app.create_visual(plane_body)
-    app.add(plane_body)
+    terrain = agx_helper.Terrain(app)
+
+    snake = Snake(app, 6)
+    snake.setRotation(agx.EulerAngles(math.pi / 2, 0, 0))
+    snake.setPosition(agx.Vec3(0, .5, 0.3))
+    app.add(snake)
+
+    terrain_snake_cm = app.sim.getMaterialManager() \
+        .getOrCreateContactMaterial(terrain.material, snake.material)  # type: agx.ContactMaterial
+    terrain_snake_cm.setFrictionCoefficient(3)
+    terrain_snake_cm.setUseContactAreaApproach(True)
+    terrain_snake_cm.setYoungsModulus(3E3)
+
+    fm = agx.IterativeProjectedConeFriction(agx.FrictionModel.DIRECT)
+    terrain_snake_cm.setFrictionModel(fm)
+
+    for i in range(0, snake.num_servos):
+        app.add_event_listener(SineMotion(snake, i))
+
+    app.init_camera(eye=agx.Vec3(-2, -2, 1), center=agx.Vec3(0, 0, 0.5))

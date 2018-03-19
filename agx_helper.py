@@ -8,8 +8,10 @@ import agxCollide
 import agxIO
 import agxOSG
 import agxRender
+import agxModel
 
 import sys
+import math
 
 
 class AgxApp:
@@ -149,6 +151,34 @@ def create_constraint(**kwds):
     
     agx.Constraint.calculateFramesFromBody(pos, axis, rb1, f1, rb2, f2)
     return c(rb1, f1, rb2, f2)
+
+
+class Terrain:
+
+    def __init__(self, app: AgxApp):
+
+        hf = agxCollide.HeightField.createFromFile("assets/textures/dirtRoad128.png", 6, 6, -0.5, 0.5)
+        terrain = agxModel.Terrain(hf)
+        app.add(terrain)
+
+        self.material = agx.Material("GroundMaterial")
+
+        terrain_data = terrain.getDataInterface()  # type: agxModel.TerrainDataInterface
+        terrain_data.setMaxCompressionMultiplier(32)
+        particle_adhesion = 0
+        deformability = 100
+        angle_of_repose = math.pi * 0.2
+        material_index = 0
+        terrain_data.add(self.material, material_index, particle_adhesion, deformability, angle_of_repose)
+
+        range_for_youngs_modulus = agx.RangeReal(10000, 20000)
+        terrain_renderer = agxOSG.TerrainRenderer(terrain, range_for_youngs_modulus, app.root)
+        app.add(terrain_renderer)
+
+        terrain_visual = terrain_renderer.getTerrainNode()
+        agxOSG.setDiffuseColor(terrain_visual, agxRender.Color(0.7, 0.7, 0.8, 1))
+        agxOSG.setSpecularColor(terrain_visual, agxRender.Color(0.4, 0.4, 0.4, 1))
+        agxOSG.setShininess(terrain_visual, 128)
 
 
 if agxPython.getContext() is None:

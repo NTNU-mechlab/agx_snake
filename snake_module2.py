@@ -1,5 +1,4 @@
 
-
 import agx
 import agxSDK
 import agxCollide
@@ -17,7 +16,7 @@ upper_shape = agx_helper.load_shape('assets/upper.obj')
 intermediate_shape = agx_helper.load_shape('assets/intermediate.obj')
 
 sensor_bounds = agx.Vec3(0.0085, 0.002, 0.02)
-intermediate_bounds = agx.Vec3(0.0125, 0.0325, 0.0325)
+intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
 
 
 class ModulePart(agx.RigidBody):
@@ -162,6 +161,8 @@ class Snake(ModuleAssembly):
         self.servos = []  # type: list[agx.Hinge]
         self.sensors = []  # type: list[agx.RigidBody]
 
+        self.material = agx.Material("snake_material")
+
         def connect(rb1: agx.RigidBody, rb2: agx.RigidBody):
             axis = agx.Vec3(0, 0, -1)
             pos = agx.Vec3(0.0, 0.007, 0)
@@ -198,6 +199,9 @@ class Snake(ModuleAssembly):
                 type_b1 = last_part  # type: TypeB
                 type_b2 = TypeB(app)
                 type_b2.setPosition(type_b1.getPosition().x() + type_b1.len, 0, 0)
+                # if i % 2 == 0:
+                #     type_b1.bottom.setLocalRotation(agx.EulerAngles(math.pi/2, 0, 0))
+                #     type_b2.upper.setLocalRotation(agx.EulerAngles(math.pi / 2, 0, 0))
                 self.add(type_b2)
                 connect(type_b1.bottom, type_b2.upper)
                 self.sensors.append(type_b2.intermediate.sensor)
@@ -206,9 +210,11 @@ class Snake(ModuleAssembly):
         self.num_servos = len(self.servos)
         self.num_sensors = len(self.sensors)
 
-        print(self.sensors)
+        for sensor in self.sensors:  # type: agx.RigidBody
+            g = sensor.getGeometries()[0]  # type: agxCollide.Geometry
+            g.setMaterial(self.material)
 
-    def get_contacts(self, contacts=[]) -> list:
+    def get_contacts(self, contacts: list=[]) -> list:
         contacts.clear()
         for sensor in self.sensors:  # type: agx.RigidBody
             c = self.app.get_contacts(sensor)
@@ -236,7 +242,7 @@ class SineMotion(agxSDK.StepEventListener):
         period = 2
         f = 1/period
         self.omega = 2 * math.pi * f
-        self.amplitude = math.radians(45)
+        self.amplitude = math.radians(35)
 
         t = (1/(snake.num_servos-2)) * servo_index
         v0 = 0
@@ -249,29 +255,31 @@ class SineMotion(agxSDK.StepEventListener):
 
     def pre(self, time):
         speed = self.amplitude * math.sin(self.omega * time + self.phase)
-        self.hinge.getMotor1D().setSpeed(-speed)
-
-        # c = self.snake.get_contacts()[0]
-        # if c is not None:
-        #     for p in c:  # type: agxCollide.ContactPoint
-        #         print(p.getDepth())
-
-
-
+        self.hinge.getMotor1D().setSpeed(speed)
 
 
 def build_scene():
 
-    app = agx_helper.AgxApp(2)
+    app = agx_helper.AgxApp(num_threads=2)
     app.create_sky()
-    add_floor(app)
 
-    snake = Snake(app, 5)
+    terrain = agx_helper.Terrain(app)
+
+    snake = Snake(app, 7)
     snake.setRotation(agx.EulerAngles(math.pi/2, 0, 0))
-    snake.setPosition(agx.Vec3(0, 0, 0.1))
+    snake.setPosition(agx.Vec3(0, .5, 0.3))
     app.add(snake)
+
+    terrain_snake_cm = app.sim.getMaterialManager()\
+        .getOrCreateContactMaterial(terrain.material, snake.material)  # type: agx.ContactMaterial
+    terrain_snake_cm.setFrictionCoefficient(3)
+    terrain_snake_cm.setUseContactAreaApproach(True)
+    terrain_snake_cm.setYoungsModulus(3E3)
+
+    fm = agx.IterativeProjectedConeFriction(agx.FrictionModel.DIRECT)
+    terrain_snake_cm.setFrictionModel(fm)
 
     for i in range(0, snake.num_servos):
         app.add_event_listener(SineMotion(snake, i))
 
-    app.init_camera(eye=agx.Vec3(-1, -1, 0.5))
+    app.init_camera(eye=agx.Vec3(-2, -2, 1), center=agx.Vec3(0,0,0.5))

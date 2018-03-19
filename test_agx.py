@@ -27,7 +27,7 @@ def build_scene():  # application entry point. Do not change method signature
     pitch_only = False
     snake = snake_module.Snake(app, 5, pitch_only)
     if pitch_only:
-        snake.setRotation(agx.EulerAngles(-math.pi / 2, 0, 0))
+        snake.setRotation(agx.EulerAngles(math.pi / 2, 0, 0))
     snake.setPosition(agx.Vec3(0, 0, 0.1))
     app.add(snake)
 
@@ -63,7 +63,6 @@ def build_scene():  # application entry point. Do not change method signature
             app.add_event_listener(SineMotion(i, snake.num_modules))
         elif i % 2 == 0:
             app.add_event_listener(SineMotion(i, snake.num_modules))
-
 
 
 

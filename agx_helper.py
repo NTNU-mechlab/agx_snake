@@ -35,6 +35,9 @@ class AgxApp:
     def init_camera(self, eye=agx.Vec3(-25, -25, 25), center=agx.Vec3(), up=agx.Vec3.Z_AXIS()):
         self.app.setCameraHome(eye, center, up)
 
+    def get_contacts(self, body: agx.RigidBody):
+        return get_contacts(body, self.sim.getSpace())
+
     def create_sky(self):
         c1 = agxRender.Color.SkyBlue()
         c2 = agxRender.Color.DodgerBlue()
@@ -91,16 +94,36 @@ def create_visual(obj, root, diffuse_color: agxRender.Color=None, ambient_color:
     if diffuse_color is not None:
         agxOSG.setDiffuseColor(node, diffuse_color)
         
-    if ambient_color is not  None:
+    if ambient_color is not None:
         agxOSG.setAmbientColor(node, ambient_color)
         
-    if shininess is not  None:
+    if shininess is not None:
         agxOSG.setShininess(node, shininess)
         
-    if alpha is not  None:
+    if alpha is not None:
         agxOSG.setAlpha(node, alpha)
         
     return node
+
+
+def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
+
+    contacts = []
+    for gc in space.getGeometryContacts():  # type: agxCollide.GeometryContact
+        if not gc.isEnabled():
+            continue
+        rb1 = gc.rigidBody(0)  # type: agx.RigidBody
+        rb2 = gc.rigidBody(1)  # type: agx.RigidBody
+
+        if rb1 is not None and rb1.getUuid() != body.getUuid() and rb2 is not None and rb2.getUuid() != body.getUuid():
+            continue
+        points = gc.points()  # type: agxCollide.ContactPointVector
+        for point in points:  # type: agxCollide.ContactPoint
+            if not point.getEnabled():
+                continue
+            contacts.append(point)
+
+    return contacts
 
 
 def create_constraint(**kwds):

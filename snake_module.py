@@ -18,22 +18,6 @@ intermediate_shape = agx_helper.load_shape('assets/intermediate.obj')
 intermediate_bounds = agx.Vec3(0.0125, 0.0325, 0.0325)
 
 
-class Intermediate(agx.RigidBody):
-
-    def __init__(self, app):
-        super().__init__()
-
-        visual_geometry = agxCollide.Geometry(intermediate_shape.deepCopy())
-        visual_geometry.setEnableCollisions(False)
-        app.create_visual(visual_geometry, agxRender.Color.Orange())
-
-        x = 0.0125; y = 0.035; z = 0.035
-        collision_geometry = agxCollide.Geometry(agxCollide.Box(x, y, z),
-                                                 agx.AffineMatrix4x4.translate(-module_len / 2 - x, 0, 0))
-
-        self.add(visual_geometry)
-        self.add(collision_geometry)
-
 class BottomPart(agx.RigidBody):
 
     def __init__(self, app):
@@ -42,7 +26,7 @@ class BottomPart(agx.RigidBody):
         g1.setEnableCollisions(False)
         app.create_visual(g1, agxRender.Color.Black())
 
-        t = agx.AffineMatrix4x4.rotate(math.pi/2, 0, 1, 0) \
+        t = agx.AffineMatrix4x4.rotate(math.pi/2, 0, 1, 0) * agx.AffineMatrix4x4.rotate(math.pi, 1, 0, 0)\
             * agx.AffineMatrix4x4.translate(-module_len/2 - intermediate_len, 0, 0)
 
         g2 = agxCollide.Geometry(intermediate_shape.deepCopy(), t)
@@ -73,7 +57,8 @@ class UpperPart(agx.RigidBody):
         self.add(g)
 
         if is_end:
-            t = agx.AffineMatrix4x4.rotate(-math.pi / 2, 0, 1, 0) * agx.AffineMatrix4x4.translate(
+            t = agx.AffineMatrix4x4.rotate(-math.pi / 2, 0, 1, 0) * agx.AffineMatrix4x4.rotate(math.pi, 1, 0, 0)\
+                * agx.AffineMatrix4x4.translate(
                 module_len / 2 + intermediate_len, 0, 0)
             g2 = agxCollide.Geometry(intermediate_shape.deepCopy(), t)
             g2.setEnableCollisions(False)
@@ -166,10 +151,8 @@ def build_scene_2(): #application entry point. Do not change method signature
     snake.setPosition(agx.Vec3(0, 0, 0.1))
     app.add(snake)
 
-    plane_body = agx.RigidBody(agxCollide.Geometry(agxCollide.Box(1, 1, 0.1), agx.AffineMatrix4x4.translate(0, 0, -0.1/2)))
+    plane_geometry = agxCollide.Geometry(agxCollide.Box(1, 1, 0.1), agx.AffineMatrix4x4.translate(0, 0, -0.1/2))
+    app.create_visual(plane_geometry, diffuse_color=agxRender.Color.Green())
+    app.add(plane_geometry)
 
-    plane_body.setMotionControl(agx.RigidBody.STATIC)
-    app.create_visual(plane_body, diffuse_color=agxRender.Color.Green())
-    app.add(plane_body)
-
-    app.init_camera(eye=agx.Vec3(-1, -1, 0.5), center=plane_body.getPosition())
+    app.init_camera(eye=agx.Vec3(-1, -1, 0.5))

@@ -1,24 +1,20 @@
 
 import agx
-import agxSDK
-import agxUtil
+import agxIO
+import agxOSG
 import agxPython
 import agxCollide
 
-import agxIO
-import agxOSG
-import agxRender
-import agxModel
+from agxRender import Color
+from agxUtil import createTrimeshFromFile
 
 import sys
-import math
 
 
-class AgxApp:
-    
+class SnakeApp:
+
     def __init__(self, num_threads=2):
 
-        self.customData = dict()
         self.sim = agxPython.getContext().environment.getSimulation()  # type: agxSDK.Simulation
         self.app = agxPython.getContext().environment.getApplication()  # type: agxOSG.ExampleApplication
         self.root = agxPython.getContext().environment.getSceneRoot()  # type: agxOSG.Group
@@ -41,75 +37,57 @@ class AgxApp:
         return get_contacts(body, self.sim.getSpace())
 
     def create_sky(self):
-        c1 = agxRender.Color.SkyBlue()
-        c2 = agxRender.Color.DodgerBlue()
+        c1 = Color.SkyBlue()
+        c2 = Color.DodgerBlue()
 
-        def to_vec3(o: agxRender.Color):
+        def to_vec3(o: Color):
             return agx.Vec3(o.x(), o.y(), o.z())
 
         self.app.getSceneDecorator().setBackgroundColor(to_vec3(c1), to_vec3(c2))
 
     def register_additional_scenes(self, *additional_scenes):
         if len(additional_scenes) > 0:
-            
+
             def add_scene(name):
-                scene_key = self.app.getNumScenes()+1
+                scene_key = self.app.getNumScenes() + 1
                 self.app.addScene(script_file_name, name, ord(ascii(scene_key)), True)
-            
+
             script_file_name = self.app.getArguments().getArgumentName(1)
-            script_file_name=script_file_name.replace('agxscene:','')
+            script_file_name = script_file_name.replace('agxscene:', '')
             print(script_file_name)
-            
+
             for scene in additional_scenes:
                 add_scene(scene)
-
-
-class KeyEvent(agxSDK.GuiEventListener):
-
-    def __init__(self, key, func):
-        super().__init__(agxSDK.GuiEventListener.KEYBOARD)
-        self.key = key
-        self.func = func
-
-    def keyboard(self, key, alt, x, y, down):
-        handled = False
-        if key == self.key:
-            self.func()
-            handled = True
-        return handled
-
 
 def load_model(path) -> agxCollide.Geometry:
     return agxCollide.Geometry(load_shape(path))
 
 
 def load_shape(path) -> agxCollide.Trimesh:
-    return agxUtil.createTrimeshFromFile(
-                        path, agxCollide.Trimesh.REMOVE_DUPLICATE_VERTICES, agx.Matrix3x3())
+    return createTrimeshFromFile(
+        path, agxCollide.Trimesh.REMOVE_DUPLICATE_VERTICES, agx.Matrix3x3())
 
 
-def create_visual(obj, root, diffuse_color: agxRender.Color=None, ambient_color: agxRender.Color=None,
-                  shininess=None, alpha: float=None):
-
+def create_visual(obj, root, diffuse_color: Color = None, ambient_color: Color = None,
+                  shininess=None, alpha: float = None):
     node = agxOSG.createVisual(obj, root)
-        
+
     if diffuse_color is not None:
         agxOSG.setDiffuseColor(node, diffuse_color)
-        
+
     if ambient_color is not None:
         agxOSG.setAmbientColor(node, ambient_color)
-        
+
     if shininess is not None:
         agxOSG.setShininess(node, shininess)
-        
+
     if alpha is not None:
         agxOSG.setAlpha(node, alpha)
-        
+
     return node
 
 
 def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
-
     contacts = []
     for gc in space.getGeometryContacts():  # type: agxCollide.GeometryContact
         if not gc.isEnabled():
@@ -129,13 +107,12 @@ def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
 
 
 def create_constraint(**kwds):
-    
     pos = None
     if 'pos' in kwds:
         pos = kwds['pos']
     else:
         pos = agx.Vec3()
-        
+
     axis = None
     if 'axis' in kwds:
         axis = kwds['axis']
@@ -148,47 +125,19 @@ def create_constraint(**kwds):
 
     f1 = agx.Frame()
     f2 = agx.Frame()
-    
+
     agx.Constraint.calculateFramesFromBody(pos, axis, rb1, f1, rb2, f2)
     return c(rb1, f1, rb2, f2)
 
 
-class Terrain:
-
-    def __init__(self, app: AgxApp):
-
-        hf = agxCollide.HeightField.createFromFile("assets/textures/dirtRoad128.png", 6, 6, -0.5, 0.5)
-        terrain = agxModel.Terrain(hf)
-        app.add(terrain)
-
-        self.material = agx.Material("GroundMaterial")
-
-        terrain_data = terrain.getDataInterface()  # type: agxModel.TerrainDataInterface
-        terrain_data.setMaxCompressionMultiplier(32)
-        particle_adhesion = 0
-        deformability = 100
-        angle_of_repose = math.pi * 0.2
-        material_index = 0
-        terrain_data.add(self.material, material_index, particle_adhesion, deformability, angle_of_repose)
-
-        range_for_youngs_modulus = agx.RangeReal(10000, 20000)
-        terrain_renderer = agxOSG.TerrainRenderer(terrain, range_for_youngs_modulus, app.root)
-        app.add(terrain_renderer)
-
-        terrain_visual = terrain_renderer.getTerrainNode()
-        agxOSG.setDiffuseColor(terrain_visual, agxRender.Color(0.7, 0.7, 0.8, 1))
-        agxOSG.setSpecularColor(terrain_visual, agxRender.Color(0.4, 0.4, 0.4, 1))
-        agxOSG.setShininess(terrain_visual, 128)
-
-
 if agxPython.getContext() is None:
     init = agx.AutoInit()
-    
+
     argParser = agxIO.ArgumentParser([sys.executable] + sys.argv)
-    
+
     app = agxOSG.ExampleApplication()
     app.addScene(argParser.getArgumentName(1), "build_scene", ord('1'), True)
-    
+
     if app.init(argParser):
         app.run()
     else:

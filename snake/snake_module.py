@@ -4,16 +4,19 @@ import agxSDK
 import agxCollide
 
 from agxRender import Color
-import agx_helper
 
 import math
 
+from snake import SnakeApp
+from snake import load_shape
+from snake import create_constraint
+
 module_len = 0.0725
 intermediate_len = 0.025
-servo_shape = agx_helper.load_shape('assets/servo.obj')
-bottom_shape = agx_helper.load_shape('assets/bottom.obj')
-upper_shape = agx_helper.load_shape('assets/upper.obj')
-intermediate_shape = agx_helper.load_shape('assets/intermediate.obj')
+servo_shape = load_shape('assets/servo.obj')
+bottom_shape = load_shape('assets/bottom.obj')
+upper_shape = load_shape('assets/upper.obj')
+intermediate_shape = load_shape('assets/intermediate.obj')
 
 sensor_bounds = agx.Vec3(0.0085, 0.002, 0.02)
 intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
@@ -21,21 +24,21 @@ intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
 
 class ModulePart(agx.RigidBody):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp):
         super().__init__()
-        self.app = app  # type: agx_helper.AgxApp
+        self.app = app  # type: SnakeApp
 
 
 class ModuleAssembly(agxSDK.Assembly):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp):
         super().__init__()
-        self.app = app  # type: agx_helper.AgxApp
+        self.app = app  # type: SnakeApp
 
 
 class IntermediatePart(ModuleAssembly):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp, material: agx.Material):
         super().__init__(app)
 
         visual_geometry = agxCollide.Geometry(intermediate_shape.deepCopy(),
@@ -57,6 +60,9 @@ class IntermediatePart(ModuleAssembly):
         self.sensor = agx.RigidBody(sensor_geometry)
         self.add(self.sensor)
 
+        collision_geometry.setMaterial(material)
+        sensor_geometry.setMaterial(material)
+
         self.merged_body = agx.MergedBody()
         self.merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.body, self.sensor))
         app.add(self.merged_body)
@@ -64,7 +70,7 @@ class IntermediatePart(ModuleAssembly):
 
 class BottomPart(ModulePart):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp):
         super().__init__(app)
 
         servo_geometry = agxCollide.Geometry(servo_shape.deepCopy())
@@ -81,7 +87,7 @@ class BottomPart(ModulePart):
 
 class UpperPart(ModulePart):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp):
         super().__init__(app)
 
         upper_geometry = agxCollide.Geometry(upper_shape.deepCopy())
@@ -93,12 +99,12 @@ class UpperPart(ModulePart):
 
 class TypeA(ModuleAssembly):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp, material: agx.Material):
         super().__init__(app)
 
         self.len = 0
 
-        self.intermediate = IntermediatePart(app)
+        self.intermediate = IntermediatePart(app, material)
         self.intermediate.setPosition(agx.Vec3(-module_len / 2 - intermediate_len, 0, 0))
 
         self.bottom = BottomPart(app)
@@ -113,14 +119,14 @@ class TypeA(ModuleAssembly):
 
 class TypeB(ModuleAssembly):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp, material: agx.Material):
         super().__init__(app)
 
         self.len = module_len + intermediate_len
 
         self.upper = UpperPart(app)
 
-        self.intermediate = IntermediatePart(app)
+        self.intermediate = IntermediatePart(app, material)
         self.intermediate.setPosition(agx.Vec3(module_len / 2, 0, 0))
 
         self.bottom = BottomPart(app)
@@ -138,11 +144,11 @@ class TypeB(ModuleAssembly):
 
 class TypeC(ModuleAssembly):
 
-    def __init__(self, app: agx_helper.AgxApp):
+    def __init__(self, app: SnakeApp, material: agx.Material):
         super().__init__(app)
 
         self.upper = UpperPart(app)
-        self.intermediate = IntermediatePart(app)
+        self.intermediate = IntermediatePart(app, material)
         self.intermediate.setPosition(agx.Vec3(module_len / 2, 0, 0))
 
         self.add(self.upper)
@@ -155,18 +161,18 @@ class TypeC(ModuleAssembly):
 
 class Snake(ModuleAssembly):
 
-    def __init__(self, app: agx_helper.AgxApp, num_servos: int=2):
+    def __init__(self, app: SnakeApp, num_servos: int=2):
         super().__init__(app)
 
         self.servos = []  # type: list[agx.Hinge]
         self.sensors = []  # type: list[agx.RigidBody]
 
-        self.material = agx.Material("snake_material")
+        self.material = agx.Material("snake_material_{}".format(self.getUuid().__str__))
 
         def connect(rb1: agx.RigidBody, rb2: agx.RigidBody):
             axis = agx.Vec3(0, 0, -1)
             pos = agx.Vec3(0.0, 0.007, 0)
-            hinge = agx_helper.create_constraint(
+            hinge = create_constraint(
                 pos=pos, axis=axis, c=agx.Hinge, rb1=rb1, rb2=rb2)  # type: agx.Hinge
             hinge.setCompliance(1E-10)
             hinge.getMotor1D().setEnable(True)
@@ -178,8 +184,8 @@ class Snake(ModuleAssembly):
         for i in range(0, num_servos):
 
             if i == 0:
-                type_a = TypeA(app)
-                type_b = TypeB(app)
+                type_a = TypeA(app, self.material)
+                type_b = TypeB(app, self.material)
                 type_b.setPosition(type_a.len, 0, 0)
                 self.add(type_a)
                 self.add(type_b)
@@ -189,7 +195,7 @@ class Snake(ModuleAssembly):
                 last_part = type_b
             elif i == num_servos-1:
                 type_b = last_part  # type: TypeB
-                type_c = TypeC(app)
+                type_c = TypeC(app, self.material)
                 type_c.setPosition(type_b.getPosition().x() + type_b.len, 0, 0)
                 self.add(type_c)
                 connect(type_b.bottom, type_c.upper)
@@ -197,7 +203,7 @@ class Snake(ModuleAssembly):
                 last_part = type_c
             else:
                 type_b1 = last_part  # type: TypeB
-                type_b2 = TypeB(app)
+                type_b2 = TypeB(app, self.material)
                 type_b2.setPosition(type_b1.getPosition().x() + type_b1.len, 0, 0)
                 # if i % 2 == 0:
                 #     type_b1.bottom.setLocalRotation(agx.EulerAngles(math.pi/2, 0, 0))
@@ -210,26 +216,12 @@ class Snake(ModuleAssembly):
         self.num_servos = len(self.servos)
         self.num_sensors = len(self.sensors)
 
-        for sensor in self.sensors:  # type: agx.RigidBody
-            g = sensor.getGeometries()[0]  # type: agxCollide.Geometry
-            g.setMaterial(self.material)
-
     def get_contacts(self, contacts: list=[]) -> list:
         contacts.clear()
         for sensor in self.sensors:  # type: agx.RigidBody
             c = self.app.get_contacts(sensor)
             contacts.append(c)
         return contacts
-
-
-###########################
-def add_floor(app: agx_helper.AgxApp):
-
-    size = agx.Vec3(25, 25, 0.1)
-    floor = agxCollide.Geometry(agxCollide.Box(size))
-    floor.setPosition(0, 0, -size.z()/2)
-    app.create_visual(floor, Color.Green())
-    app.add(floor)
 
 
 class SineMotion(agxSDK.StepEventListener):
@@ -239,47 +231,21 @@ class SineMotion(agxSDK.StepEventListener):
 
         self.snake = snake
 
-        period = 2
-        f = 1/period
-        self.omega = 2 * math.pi * f
+        self.period = 2
+        f = 1/self.period
+        self.__omega = 2 * math.pi * f
         self.amplitude = math.radians(35)
 
         t = (1/(snake.num_servos-2)) * servo_index
-        v0 = 0
-        v1 = math.pi*2
+        self.v0 = 0
+        self.v1 = math.pi*2
 
-        self.phase = (1-t) * v0 + t * v1
-        print("servo{} phase={}".format(servo_index, math.degrees(self.phase)))
+        self.__phase = (1-t) * self.v0 + t * self.v1
+        print("servo{} phase={}".format(servo_index, math.degrees(self.__phase)))
 
         self.hinge = snake.servos[servo_index]
 
     def pre(self, time):
-        speed = self.amplitude * math.sin(self.omega * time + self.phase)
+        speed = self.amplitude * math.sin(self.__omega * time + self.__phase)
         self.hinge.getMotor1D().setSpeed(speed)
 
-
-def build_scene():
-
-    app = agx_helper.AgxApp(num_threads=2)
-    app.create_sky()
-
-    terrain = agx_helper.Terrain(app)
-
-    snake = Snake(app, 7)
-    snake.setRotation(agx.EulerAngles(math.pi/2, 0, 0))
-    snake.setPosition(agx.Vec3(0, .5, 0.3))
-    app.add(snake)
-
-    terrain_snake_cm = app.sim.getMaterialManager()\
-        .getOrCreateContactMaterial(terrain.material, snake.material)  # type: agx.ContactMaterial
-    terrain_snake_cm.setFrictionCoefficient(3)
-    terrain_snake_cm.setUseContactAreaApproach(True)
-    terrain_snake_cm.setYoungsModulus(3E3)
-
-    fm = agx.IterativeProjectedConeFriction(agx.FrictionModel.DIRECT)
-    terrain_snake_cm.setFrictionModel(fm)
-
-    for i in range(0, snake.num_servos):
-        app.add_event_listener(SineMotion(snake, i))
-
-    app.init_camera(eye=agx.Vec3(-2, -2, 1), center=agx.Vec3(0,0,0.5))

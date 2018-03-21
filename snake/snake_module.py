@@ -147,6 +147,8 @@ class TypeC(ModuleAssembly):
     def __init__(self, app: SnakeApp, material: agx.Material):
         super().__init__(app)
 
+        self.len = (module_len*0.5) + intermediate_len
+
         self.upper = UpperPart(app)
         self.intermediate = IntermediatePart(app, material)
         self.intermediate.setRotation(agx.EulerAngles(0, 0, math.pi))
@@ -170,6 +172,8 @@ class Snake(ModuleAssembly):
 
         self.material = agx.Material("snake_material_{}".format(self.getUuid().__str__))
 
+        self.len = 0
+
         def connect(rb1: agx.RigidBody, rb2: agx.RigidBody):
             axis = agx.Vec3(0, 0, -1)
             pos = agx.Vec3(0.0, 0.007, 0)
@@ -184,6 +188,10 @@ class Snake(ModuleAssembly):
             self.add(hinge)
             self.servos.append(hinge)
 
+        def add(part):
+            self.len += part.len
+            self.add(part)
+
         last_part = None  # type: ModulePart
         for i in range(0, num_servos):
 
@@ -191,8 +199,8 @@ class Snake(ModuleAssembly):
                 type_a = TypeA(app, self.material)
                 type_b = TypeB(app, self.material)
                 type_b.setPosition(type_a.len, 0, 0)
-                self.add(type_a)
-                self.add(type_b)
+                add(type_a)
+                add(type_b)
                 connect(type_a.bottom, type_b.upper)
                 self.sensors.append(type_a.intermediate.sensor)
                 self.sensors.append(type_b.intermediate.sensor)
@@ -201,7 +209,7 @@ class Snake(ModuleAssembly):
                 type_b = last_part  # type: TypeB
                 type_c = TypeC(app, self.material)
                 type_c.setPosition(type_b.getPosition().x() + type_b.len, 0, 0)
-                self.add(type_c)
+                add(type_c)
                 connect(type_b.bottom, type_c.upper)
                 self.sensors.append(type_c.intermediate.sensor)
                 last_part = type_c
@@ -209,16 +217,15 @@ class Snake(ModuleAssembly):
                 type_b1 = last_part  # type: TypeB
                 type_b2 = TypeB(app, self.material)
                 type_b2.setPosition(type_b1.getPosition().x() + type_b1.len, 0, 0)
-                # if i % 2 == 0:
-                #     type_b1.bottom.setLocalRotation(agx.EulerAngles(math.pi/2, 0, 0))
-                #     type_b2.upper.setLocalRotation(agx.EulerAngles(math.pi / 2, 0, 0))
-                self.add(type_b2)
+                add(type_b2)
                 connect(type_b1.bottom, type_b2.upper)
                 self.sensors.append(type_b2.intermediate.sensor)
                 last_part = type_b2
 
         self.num_servos = len(self.servos)
         self.num_sensors = len(self.sensors)
+
+
 
     def get_contacts(self, contacts: list=[]) -> list:
         contacts.clear()

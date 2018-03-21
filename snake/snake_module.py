@@ -149,7 +149,8 @@ class TypeC(ModuleAssembly):
 
         self.upper = UpperPart(app)
         self.intermediate = IntermediatePart(app, material)
-        self.intermediate.setPosition(agx.Vec3(module_len / 2, 0, 0))
+        self.intermediate.setRotation(agx.EulerAngles(0, 0, math.pi))
+        self.intermediate.setPosition(agx.Vec3(module_len/2 + intermediate_len, 0, 0))
 
         self.add(self.upper)
         self.add(self.intermediate)

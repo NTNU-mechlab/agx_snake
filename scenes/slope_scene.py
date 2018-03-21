@@ -19,10 +19,10 @@ class Obstacle(agxSDK.Assembly):
         self.material = agx.Material("obstacle_material_{}".format(self.getUuid().__str__))
 
         def add_slope():
-            half_extents = agx.Vec3(0.25, 0.1, 0.5)
+            half_extents = agx.Vec3(0.005, 0.1, 0.5)
             slope = agxCollide.Geometry(agxCollide.Box(half_extents), agx.AffineMatrix4x4.translate(half_extents.x(), 0, half_extents.z()))
             slope.setRotation(agx.EulerAngles(0, math.radians(60), 0))
-            slope.setPosition(agx.Vec3(-1.35, 0, 0))
+            slope.setPosition(agx.Vec3(-1.365, 0, 0))
             app.create_visual(slope, diffuse_color=agxRender.Color.Red())
 
             slope.setMaterial(self.material)

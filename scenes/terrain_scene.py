@@ -10,7 +10,7 @@ import math
 
 from snake import SnakeApp
 from snake.snake_module import Snake
-from snake.snake_module import SineMotion
+from snake.snake_module import ExmapleSineMotion
 
 
 class Terrain:
@@ -63,6 +63,6 @@ def build_scene():
     terrain_snake_cm.setFrictionModel(fm)
 
     for i in range(0, snake.num_servos):
-        app.add_event_listener(SineMotion(snake, i))
+        app.add_event_listener(ExmapleSineMotion(snake, i))
 
     app.init_camera(eye=agx.Vec3(-2, -2, 1), center=agx.Vec3(0, 0, 0.5))

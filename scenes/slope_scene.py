@@ -1,7 +1,7 @@
 
 from snake import SnakeApp
 from snake.snake_module import Snake
-from snake.snake_module import SineMotion
+from snake.snake_module import ExmapleSineMotion
 
 import agx
 import agxCollide
@@ -42,7 +42,7 @@ class Obstacle(agxSDK.Assembly):
 
 def create_floor(app: SnakeApp, material: agx.Material=None) -> agxCollide.Geometry:
     height = 0.1
-    floor = agxCollide.Geometry(agxCollide.Box(5, 5, height), agx.AffineMatrix4x4.translate(0, 0, -height))
+    floor = agxCollide.Geometry(agxCollide.Box(2.5, 1, height), agx.AffineMatrix4x4.translate(0, 0, -height))
     app.create_visual(floor, diffuse_color=agxRender.Color.Green())
 
     if material is not None:
@@ -65,13 +65,12 @@ def build_scene():
     snake = Snake(app, 5)
     snake.setRotation(agx.EulerAngles(math.pi / 2, 0, math.pi))
     snake.setPosition(agx.Vec3(-1.45, 0, 0.05))
-
     app.add(snake)
 
     snake_obstacle_cm = app.sim.getMaterialManager()\
         .getOrCreateContactMaterial(snake.material, obstacle.material)  # type: agx.ContactMaterial
 
-    snake_obstacle_cm.setFrictionCoefficient(2)
+    snake_obstacle_cm.setFrictionCoefficient(2)  # a lower makes contacts more slippery
 
     snake_obstacle_cm.setUseContactAreaApproach(True)
     snake_obstacle_cm.setYoungsModulus(3E9)
@@ -80,8 +79,9 @@ def build_scene():
     snake_obstacle_cm.setFrictionModel(fm)
 
     for i in range(0, snake.num_servos):
-        sm = SineMotion(snake, i)
-        sm.amplitude = math.radians(45)
+        sm = ExmapleSineMotion(snake, i)
+        sm.period = 1
+        sm.amplitude = math.radians(35)
         app.add_event_listener(sm)
 
 
@@ -103,7 +103,7 @@ def build_scene2():
     snake_obstacle_cm = app.sim.getMaterialManager()\
         .getOrCreateContactMaterial(snake.material, obstacle.material)  # type: agx.ContactMaterial
 
-    snake_obstacle_cm.setFrictionCoefficient(2)
+    snake_obstacle_cm.setFrictionCoefficient(2)  # a lower makes contacts more slippery
 
     snake_obstacle_cm.setUseContactAreaApproach(True)
     snake_obstacle_cm.setYoungsModulus(3E9)
@@ -112,7 +112,7 @@ def build_scene2():
     snake_obstacle_cm.setFrictionModel(fm)
 
     for i in range(0, snake.num_servos):
-        sm = SineMotion(snake, i)
+        sm = ExmapleSineMotion(snake, i)
         sm.amplitude = math.radians(45)
         app.add_event_listener(sm)
 

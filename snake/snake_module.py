@@ -174,9 +174,12 @@ class Snake(ModuleAssembly):
             pos = agx.Vec3(0.0, 0.007, 0)
             hinge = create_constraint(
                 pos=pos, axis=axis, c=agx.Hinge, rb1=rb1, rb2=rb2)  # type: agx.Hinge
-            hinge.setCompliance(1E-10)
+            hinge.setCompliance(1E-12)
             hinge.getMotor1D().setEnable(True)
+            hinge.getMotor1D().setCompliance(1E-12)
             hinge.getLock1D().setEnable(False)
+            hinge.getRange1D().setEnable(True)
+            hinge.getRange1D().setRange(-math.pi/2, math.pi)
             self.add(hinge)
             self.servos.append(hinge)
 
@@ -223,29 +226,41 @@ class Snake(ModuleAssembly):
             contacts.append(c)
         return contacts
 
+    def set_hinge_compliance(self, compliance):
+        for servo in self.servos:
+            servo.getMotor1D().setCompliance(compliance)
 
-class SineMotion(agxSDK.StepEventListener):
+
+class ExmapleSineMotion(agxSDK.StepEventListener):
 
     def __init__(self, snake: Snake, servo_index: int):
         super().__init__(agxSDK.StepEventListener.PRE_STEP)
 
         self.snake = snake
 
-        self.period = 2
-        f = 1/self.period
-        self.__omega = 2 * math.pi * f
+        self._omega = None
+        self.set_period(2)
+
         self.amplitude = math.radians(35)
 
         t = (1/(snake.num_servos-2)) * servo_index
         self.v0 = 0
         self.v1 = math.pi*2
 
-        self.__phase = (1-t) * self.v0 + t * self.v1
-        print("servo{} phase={}".format(servo_index, math.degrees(self.__phase)))
+        self._phase = (1-t) * self.v0 + t * self.v1
+        print("servo{} phase={}".format(servo_index, math.degrees(self._phase)))
 
         self.hinge = snake.servos[servo_index]
 
+    def get_period(self):
+        return self._period
+
+    def set_period(self, period: float):
+        f = 1 / period
+        self._omega = 2 * math.pi * f
+
     def pre(self, time):
-        speed = self.amplitude * math.sin(self.__omega * time + self.__phase)
+        speed = self.amplitude * math.sin(self._omega * time + self._phase)
         self.hinge.getMotor1D().setSpeed(speed)
 
+    period = property(get_period, set_period)

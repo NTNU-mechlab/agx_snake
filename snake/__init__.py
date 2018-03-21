@@ -59,6 +59,7 @@ class SnakeApp:
             for scene in additional_scenes:
                 add_scene(scene)
 
+
 def load_model(path) -> agxCollide.Geometry:
     return agxCollide.Geometry(load_shape(path))
 
@@ -70,6 +71,7 @@ def load_shape(path) -> agxCollide.Trimesh:
 
 def create_visual(obj, root, diffuse_color: Color = None, ambient_color: Color = None,
                   shininess=None, alpha: float = None):
+
     node = agxOSG.createVisual(obj, root)
 
     if diffuse_color is not None:
@@ -106,7 +108,7 @@ def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
     return contacts
 
 
-def create_constraint(**kwds):
+def create_constraint(**kwds) -> agx.Constraint:
     pos = None
     if 'pos' in kwds:
         pos = kwds['pos']

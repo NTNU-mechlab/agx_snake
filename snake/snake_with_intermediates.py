@@ -225,14 +225,15 @@ class Snake(ModuleAssembly):
         self.num_servos = len(self.servos)
         self.num_sensors = len(self.sensors)
 
-
-
     def get_contacts(self, contacts: list=[]) -> list:
         contacts.clear()
         for sensor in self.sensors:  # type: agx.RigidBody
             c = self.app.get_contacts(sensor)
             contacts.append(c)
         return contacts
+
+    def get_force_magnitude_at(self, intermediate_index):
+        return self.app.get_sum_force_magnitude(self.sensors[intermediate_index])
 
     def set_hinge_compliance(self, compliance):
         for servo in self.servos:

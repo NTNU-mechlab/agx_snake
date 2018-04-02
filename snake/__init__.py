@@ -36,6 +36,9 @@ class SnakeApp:
     def get_contacts(self, body: agx.RigidBody):
         return get_contacts(body, self.sim.getSpace())
 
+    def get_sum_force_magnitude(self, body: agx.RigidBody):
+        return get_sum_force_magnitude(body, self.sim.getSpace())
+
     def create_sky(self):
         c1 = Color.SkyBlue()
         c2 = Color.DodgerBlue()
@@ -106,6 +109,14 @@ def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
             contacts.append(point)
 
     return contacts
+
+
+def get_sum_force_magnitude(body: agx.RigidBody, space: agxCollide.Space) -> float:
+
+    sum_force_mag = 0
+    for contact in get_contacts(body, space):  # type: agxCollide.ContactPoint
+        sum_force_mag += contact.getForceMagnitude()
+    return sum_force_mag
 
 
 def create_constraint(**kwds) -> agx.Constraint:

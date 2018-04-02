@@ -94,19 +94,15 @@ def create_visual(obj, root, diffuse_color: Color = None, ambient_color: Color =
 
 def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
     contacts = []
-    for gc in space.getGeometryContacts():  # type: agxCollide.GeometryContact
+    contacts_ = agxCollide.GeometryContactPtrVector()
+    space.getGeometryContacts(contacts, body)
+    for gc in contacts_:  # type: agxCollide.GeometryContact
         if not gc.isEnabled():
-            continue
-        rb1 = gc.rigidBody(0)  # type: agx.RigidBody
-        rb2 = gc.rigidBody(1)  # type: agx.RigidBody
-
-        if rb1 is not None and rb1.getUuid() != body.getUuid() and rb2 is not None and rb2.getUuid() != body.getUuid():
             continue
         points = gc.points()  # type: agxCollide.ContactPointVector
         for point in points:  # type: agxCollide.ContactPoint
-            if not point.getEnabled():
-                continue
-            contacts.append(point)
+            if point.getEnabled():
+                contacts.append(point)
 
     return contacts
 
@@ -114,8 +110,16 @@ def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
 def get_sum_force_magnitude(body: agx.RigidBody, space: agxCollide.Space) -> float:
 
     sum_force_mag = 0
-    for contact in get_contacts(body, space):  # type: agxCollide.ContactPoint
-        sum_force_mag += contact.getForceMagnitude()
+    contacts = agxCollide.GeometryContactPtrVector()
+    space.getGeometryContacts(contacts, body)
+    for gc in contacts:  # type: agxCollide.GeometryContact
+        if not gc.isEnabled():
+            continue
+        points = gc.points()  # type: agxCollide.ContactPointVector
+        for point in points:  # type: agxCollide.ContactPoint
+            if point.getEnabled():
+                sum_force_mag += point.getNormalForceMagnitude()
+
     return sum_force_mag
 
 

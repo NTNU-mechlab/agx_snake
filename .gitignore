@@ -103,3 +103,5 @@ ENV/
 .idea
 
 agx_statistics.txt
+
+/**/snake_pos.txt

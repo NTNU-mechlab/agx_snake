@@ -1,7 +1,7 @@
 
 from snake import SnakeApp
-from snake.snake_module import Snake
-from snake.snake_module import ExmapleSineMotion
+from snake.snake_with_intermediates import Snake
+from snake.snake_with_intermediates import ExmapleSineMotion
 
 import agx
 import agxCollide

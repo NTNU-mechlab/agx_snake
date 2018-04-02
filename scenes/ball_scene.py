@@ -1,8 +1,7 @@
 
 from snake import SnakeApp
 from snake.snake_module import Snake
-from snake.snake_control import SnakeControl
-from snake.gaits import *
+from snake.snake_control import *
 
 import agx
 import agxSDK
@@ -28,10 +27,9 @@ class MyKeyEvent(agxSDK.GuiEventListener):
 
     interval = 0.01
 
-    def __init__(self, ball, snake):
+    def __init__(self, ball):
         super().__init__(agxSDK.GuiEventListener.KEYBOARD)
         self.ball = ball
-        self.snake = snake
 
     def keyboard(self, key, alt, x, y, down):
         handled = False
@@ -114,18 +112,16 @@ def build_scene():  # application entry point. Do not change method signature
     app.create_visual(plane, diffuse_color=agxRender.Color.Green())
     app.add(plane)
 
-    ball_body = agx.RigidBody(agxCollide.Geometry(agxCollide.Sphere(0.035), agx.AffineMatrix4x4.translate(0, 0, 0)))
+    ball = agxCollide.Geometry(agxCollide.Sphere(0.035), agx.AffineMatrix4x4.translate(0, 0, 0))
+    ball.setPosition(agx.Vec3(-0.5, 0, 0.1))
+    app.create_visual(ball, diffuse_color=agxRender.Color.YellowGreen())
+    app.add(ball)
 
-    ball_body.setMotionControl(agx.RigidBody.KINEMATICS)
-    app.create_visual(ball_body, diffuse_color=agxRender.Color.YellowGreen())
-    app.add(ball_body)
+    snake_controller = SnakeBallControl(snake, ball)
+    snake_controller.init_turning(math.pi / 9.0, math.pi * 2.0 / 3.0, 8.0, 0.0, math.pi * 0.0 / 180.0)
+    app.add_event_listener(snake_controller)
 
-    ball_body.setPosition(agx.Vec3(-0.5, 0, 0.1))
-
-    app.add_event_listener(MyKeyEvent(ball_body, snake))
+    app.add_event_listener(MyKeyEvent(ball))
 
     app.init_camera(eye=agx.Vec3(-1, -1, 0.5))
 
-    snake_controller = SnakeBallControl(snake, ball_body)
-    snake_controller.init_turning(math.pi / 9.0, math.pi * 2.0 / 3.0, 8.0, 0.0, math.pi * 0.0 / 180.0)
-    app.add_event_listener(snake_controller)

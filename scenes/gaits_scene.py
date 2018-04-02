@@ -1,9 +1,7 @@
 
 from snake import SnakeApp
 from snake.snake_module import Snake
-from snake.snake_control import SnakeControl
-
-from snake.gaits import *
+from snake.snake_control import *
 
 import agx
 import agxRender
@@ -67,6 +65,5 @@ def build_scene_4():  # application entry point. Do not change method signature
 
 
 def build_scene_5():  # application entry point. Do not change method signature
-
     app = SnakeApp()
     setup_scene(app, ROTATING)

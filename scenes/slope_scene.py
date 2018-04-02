@@ -123,5 +123,3 @@ def build_scene2():
             sm = ExmapleSineMotion(snake, i)
             sm.amplitude = math.radians(45)
             app.add_event_listener(sm)
-
-

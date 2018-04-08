@@ -12,7 +12,7 @@ Modular snake simulation in AgX Python.
 
 ##### Python
 
-1. Install Python 3.5.x from provided ZIP or from [here](https://www.python.org/downloads/release/python-355/).
+1. Install Python 3.5.x from provided ZIP or from [here](https://www.python.org/downloads/release/python-354/).
 2. Add Python to PATH if the installation did not do it for you.
 3. Install a Python IDE. I recommend PyCharm Community. Find it in the provided ZIP or download from [here](https://www.jetbrains.com/pycharm/download/?gclid=CjwKCAjw-6bWBRBiEiwA_K1ZDUvz0gujReGyy1gph8Qs7UwFtYTpLkCVAXCfTqb92h42EHgo0XmkoRoCKIYQAvD_BwE&gclsrc=aw.ds.ds&dclid=COSr8pPBq9oCFRGSmwodsHUC9w#section=windows).
 

@@ -20,6 +20,5 @@ Modular snake simulation in AgX Python.
 ##### AgX
 
 1. Install AgX from provided ZIP file or download link. Choose the x64 version for your OS.
-2. Add _<path_to_algoryx>\AGX-<version>\bin\x64_ to PATH.
-3. Create a system variable named PYTHONPATH, and add _<path_to_algoryx>\AGX-<version>_\bin\x64\agxpy
-
+2. Add *path/to/algoryx/AGX-2.x.x.x/bin/x64* to PATH.
+3. Create a system variable named PYTHONPATH, and add *path/to/algoryx/AGX-2.x.x.x/bin/x64/agxpy*

@@ -120,5 +120,3 @@ def build_scene2():
             sm = ExampleSineMotion(snake, i)
             sm.amplitude = math.radians(45)
             app.add_event_listener(sm)
-
-

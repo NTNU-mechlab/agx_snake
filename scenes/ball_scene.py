@@ -1,8 +1,8 @@
 
-from snake import SnakeApp
-from snake.snake_module import Snake
-from snake.snake_control import SnakeControl
-from snake.gaits import *
+import app
+from app.snake_module import Snake
+from app.snake_control import SnakeControl
+from app.gaits import *
 
 import agx
 import agxSDK
@@ -103,10 +103,9 @@ class SnakeBallControl(SnakeControl):
 
 def build_scene():  # application entry point. Do not change method signature
 
-    app = SnakeApp()
     app.register_additional_scenes('build_scene_2')
 
-    snake = Snake(app, NUM_SNAKE_MODULES, pitch_only=False)  # type: snake_module.Snake
+    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False)  # type: snake_module.Snake
     snake.setPosition(agx.Vec3(0, 0, 0.1))
     app.add(snake)
 

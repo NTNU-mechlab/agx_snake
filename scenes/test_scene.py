@@ -1,6 +1,6 @@
 
-from snake import SnakeApp
-from snake.snake_module import Snake
+import app
+from app.snake_module import Snake
 
 import agx
 import agxCollide
@@ -8,13 +8,12 @@ import agxRender
 
 
 def build_scene():  # application entry point. Do not change method signature
-    app = SnakeApp()
 
-    snake1 = Snake(app, num_modules=5, pitch_only=True)
+    snake1 = Snake(num_modules=5, pitch_only=True)
     snake1.setLocalPosition(0, -0.1, 0)
     app.add(snake1)
 
-    snake2 = Snake(app, num_modules=5, pitch_only=False)
+    snake2 = Snake(num_modules=5, pitch_only=False)
     snake2.setLocalPosition(0, 0.1, 0)
     app.add(snake2)
 

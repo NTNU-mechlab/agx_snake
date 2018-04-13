@@ -1,5 +1,5 @@
 
-from snake.gaits import *
+from app.gaits import *
 
 import agxSDK
 
@@ -55,43 +55,43 @@ class SnakeControl(agxSDK.StepEventListener):
         for i in range(0, len(self.snake.modules)):
             if i % 2 != 0: # yaw group
                 self.fixed_angle[i] = True
-                self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(True)
+                self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(True)
 
-    def init_sidewinding(self, amplitude_p, amplitude_y, phi_p, period):
-        self.control_group_init(amplitude_p, amplitude_y, phi_p, phi_p, -math.pi / 20, period, 0.0, 0.0)
+    def init_sidewinding(self, amplitude_p, phi_p, period):
+        self.control_group_init(amplitude_p, amplitude_p, phi_p, phi_p, -math.pi / 20, period, 0.0, 0.0)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False
-            self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(False)
+            self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
     def init_rolling(self, amplitude_p, amplitude_y, period): # phi_y = phi_x = 0, phi_py = pi/2
         self.control_group_init(amplitude_p, amplitude_y, 0.0, 0.0, math.pi / 2, period, 0.0, 0.0)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False
-            self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(False)
+            self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
     def init_rotating(self, amplitude_p, amplitude_y, period):
         self.control_group_init(amplitude_p, amplitude_y, 0.0, math.pi, math.pi / 2, period, 0.0, 0.0)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False
-            self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(False)
+            self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
     def init_clockwise_rotating(self, amplitude_p, amplitude_y, period):
         self.control_group_init(amplitude_p, amplitude_y, 0.0, math.pi, -math.pi / 2, period, 0.0, 0.0)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False
-            self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(False)
+            self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
     def init_counterclockwise_rotating(self, amplitude_p, amplitude_y, period):
         self.control_group_init(amplitude_p, amplitude_y, 0.0, math.pi, math.pi / 2, period, 0.0, 0.0)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False
-            self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(False)
+            self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
     def init_flapping(self, amplitude_p, amplitude_y, period, offset_p):
         self.control_group_init(amplitude_p, amplitude_y, 0.0, 0.0, math.pi / 2, period, offset_p, -offset_p)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False
-            self.snake.modules[i].get_hinge().getMotor1D().setLockedAtZeroSpeed(False)
+            self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
     def set_hinge_angle(self, hinge, ref_angle, is_fixed_angle):
         error_angle = ref_angle - hinge.getAngle()
@@ -118,7 +118,7 @@ class SnakeControl(agxSDK.StepEventListener):
     def servo_control(self, cur_time):
         total_stable = 0
         for i in range(0, len(self.snake.modules)):
-            total_stable += self.set_hinge_angle(self.snake.modules[i].get_hinge(), self.desire_angle[i], self.fixed_angle[i])
+            total_stable += self.set_hinge_angle(self.snake.modules[i].hinge, self.desire_angle[i], self.fixed_angle[i])
 
         if total_stable == len(self.snake.modules):
             self.onestep_angle(cur_time)

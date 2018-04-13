@@ -1,6 +1,4 @@
 
-from app.gaits import *
-
 import agxSDK
 
 import math
@@ -11,6 +9,15 @@ MAX_TORQUE = 3.17*9.8066*0.01
 KP = 12
 REACHED = 1
 NOT_REACHED = 0
+
+
+TURNING = 1
+SIDEWINDING = 2
+ROLLING = 3
+ROTATING = 4
+FLAPPING = 5
+CCW_ROTATING = 6
+CW_ROTATING = 7
 
 
 class SnakeControl(agxSDK.StepEventListener):
@@ -28,7 +35,7 @@ class SnakeControl(agxSDK.StepEventListener):
         self.sample_time = 0
         self.period = 0
 
-        self.prev_gait = TURNING
+        self.prev_gait = None
 
     def control_group_init(self, am_p, am_y, phi_p, phi_y, phi_py, time_period, offset_p, offset_y):
         self.period = time_period
@@ -93,7 +100,8 @@ class SnakeControl(agxSDK.StepEventListener):
             self.fixed_angle[i] = False
             self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
-    def set_hinge_angle(self, hinge, ref_angle, is_fixed_angle):
+    @staticmethod
+    def set_hinge_angle(hinge, ref_angle, is_fixed_angle):
         error_angle = ref_angle - hinge.getAngle()
         if math.fabs(error_angle) > ERROR:
             if KP * error_angle > MAX_SPD:
@@ -107,7 +115,7 @@ class SnakeControl(agxSDK.StepEventListener):
             hinge.getMotor1D().setSpeed(0)
         return REACHED
 
-    def onestep_angle(self, cur_time):
+    def onestep_angle(self):
         for i in range(0, len(self.snake.modules)):
             self.desire_angle[i] = self.am[i] * math.sin(2 * math.pi * self.sample_time / self.period + self.phi[i]) + \
                                    self.offset[i]
@@ -115,13 +123,13 @@ class SnakeControl(agxSDK.StepEventListener):
         if self.sample_time>self.period:
             self.sample_time -= self.period
 
-    def servo_control(self, cur_time):
+    def servo_control(self):
         total_stable = 0
         for i in range(0, len(self.snake.modules)):
             total_stable += self.set_hinge_angle(self.snake.modules[i].hinge, self.desire_angle[i], self.fixed_angle[i])
 
         if total_stable == len(self.snake.modules):
-            self.onestep_angle(cur_time)
+            self.onestep_angle()
 
-    def pre(self, tt): # tt is the current time in simulation
-        self.servo_control(tt)
+    def pre(self, time): # tt is the current time in simulation
+        self.servo_control()

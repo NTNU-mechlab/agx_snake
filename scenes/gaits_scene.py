@@ -1,9 +1,7 @@
 
 import app
 from app.snake_module import Snake
-from app.snake_control import SnakeControl
-
-from app.gaits import *
+from app.snake_control import *
 
 import agx
 import agxRender

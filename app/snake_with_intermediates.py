@@ -7,15 +7,13 @@ import agxRender
 import math
 
 import app
-from app import load_shape
-from app import create_constraint
 
 module_len = 0.0725
 intermediate_len = 0.025
-servo_shape = load_shape('assets/servo.obj')
-bottom_shape = load_shape('assets/bottom.obj')
-upper_shape = load_shape('assets/upper.obj')
-intermediate_shape = load_shape('assets/intermediate.obj')
+servo_shape = app.load_shape('assets/servo.obj')
+bottom_shape = app.load_shape('assets/bottom.obj')
+upper_shape = app.load_shape('assets/upper.obj')
+intermediate_shape = app.load_shape('assets/intermediate.obj')
 
 sensor_bounds = agx.Vec3(0.0085, 0.002, 0.02)
 intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
@@ -162,7 +160,7 @@ class Snake(agxSDK.Assembly):
         def connect(rb1: agx.RigidBody, rb2: agx.RigidBody):
             axis = agx.Vec3(0, 0, -1)
             pos = agx.Vec3(0.0, 0.007, 0)
-            hinge = create_constraint(
+            hinge = app.create_constraint(
                 pos=pos, axis=axis, c=agx.Hinge, rb1=rb1, rb2=rb2)  # type: agx.Hinge
             hinge.setCompliance(1E-12)
             hinge.getMotor1D().setEnable(True)
@@ -177,7 +175,7 @@ class Snake(agxSDK.Assembly):
             self.len += part.len
             self.add(part)
 
-        last_part = None  # type: ModulePart
+        last_part = None  # type: agx.RigidBody
         for i in range(0, num_servos):
 
             if i == 0:
@@ -213,12 +211,12 @@ class Snake(agxSDK.Assembly):
     def get_contacts(self, contacts: list=[]) -> list:
         contacts.clear()
         for sensor in self.sensors:  # type: agx.RigidBody
-            c = self.app.get_contacts(sensor)
+            c = app.get_contacts(sensor)
             contacts.append(c)
         return contacts
 
     def get_force_magnitude_at(self, intermediate_index):
-        return self.app.get_sum_force_magnitude(self.sensors[intermediate_index])
+        return app.get_sum_force_magnitude(self.sensors[intermediate_index])
 
     def set_hinge_compliance(self, compliance):
         for servo in self.servos:

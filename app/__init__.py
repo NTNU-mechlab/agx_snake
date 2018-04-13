@@ -15,12 +15,11 @@ def sim() -> agxSDK.Simulation:
 
 
 def app() -> agxOSG.ExampleApplication:
-    return agxPython.getContext().environment.getApplication()  # type: agxOSG.ExampleApplication
+    return agxPython.getContext().environment.getApplication()
 
 
 def root() -> agxOSG.Group:
-    return agxPython.getContext().environment.getSceneRoot()  # type: agxOSG.Group
-
+    return agxPython.getContext().environment.getSceneRoot()
 
 
 def add(obj):
@@ -107,10 +106,11 @@ def init_camera(eye=agx.Vec3(-25, -25, 25), center=agx.Vec3(), up=agx.Vec3.Z_AXI
     app().setCameraHome(eye, center, up)
 
 
-def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
+def get_contacts(body: agx.RigidBody) -> list:
     contacts = []
     contacts_ = agxCollide.GeometryContactPtrVector()
-    space.getGeometryContacts(contacts, body)
+    space = sim().getSpace()  # type: agxCollide.Space
+    space.getGeometryContacts(contacts_, body)
     for gc in contacts_:  # type: agxCollide.GeometryContact
         if not gc.isEnabled():
             continue
@@ -122,10 +122,11 @@ def get_contacts(body: agx.RigidBody, space: agxCollide.Space) -> list:
     return contacts
 
 
-def get_sum_force_magnitude(body: agx.RigidBody, space: agxCollide.Space) -> float:
+def get_sum_force_magnitude(body: agx.RigidBody) -> float:
 
     sum_force_mag = 0
     contacts = agxCollide.GeometryContactPtrVector()
+    space = sim().getSpace()  # type: agxCollide.Space
     space.getGeometryContacts(contacts, body)
     for gc in contacts:  # type: agxCollide.GeometryContact
         if not gc.isEnabled():
@@ -133,7 +134,7 @@ def get_sum_force_magnitude(body: agx.RigidBody, space: agxCollide.Space) -> flo
         points = gc.points()  # type: agxCollide.ContactPointVector
         for point in points:  # type: agxCollide.ContactPoint
             if point.getEnabled():
-                sum_force_mag += point.getNormalForceMagnitude()
+                sum_force_mag += point.getForceMagnitude()
 
     return sum_force_mag
 

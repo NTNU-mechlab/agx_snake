@@ -24,6 +24,8 @@ class Obstacle(agxSDK.Assembly):
             h = 0.1
             floor = agxCollide.Geometry(agxCollide.Box(2.5, 0.5, h), agx.AffineMatrix4x4.translate(0, 0, -h))
             app.create_visual(floor, diffuse_color=agxRender.Color.Green())
+            # body = agx.RigidBody(floor)
+            # body.setMotionControl(agx.RigidBody.STATIC)
             self.add(floor)
 
         add_floor()
@@ -60,7 +62,7 @@ def build_scene():
     app.register_additional_scenes('build_scene2')
 
     angle = 0
-    for y in [-1, 0, 1]:
+    for y in [ 0]:
 
         angle += 10
         obstacle = Obstacle(0.5, angle)
@@ -87,6 +89,20 @@ def build_scene():
             sm = ExampleSineMotion(snake, i)
             sm.amplitude = math.radians(45)
             app.add_event_listener(sm)
+
+        import agxSDK
+
+        class ReadSensor(agxSDK.StepEventListener):
+            def __init__(self):
+                super().__init__(agxSDK.StepEventListener.PRE_STEP)
+
+            def pre(self, time):
+                for i in range(0, snake.num_sensors):
+                    #print(len(app.get_contacts(snake.sensors[i])))
+                    print(snake.get_force_magnitude_at(i))
+                print()
+
+        app.add_event_listener(ReadSensor())
 
 
 def build_scene2():

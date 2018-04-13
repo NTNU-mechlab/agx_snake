@@ -20,3 +20,4 @@ def build_scene():  # application entry point. Do not change method signature
     plane = agxCollide.Geometry(agxCollide.Box(2, 2, 0.1), agx.AffineMatrix4x4.translate(0, 0, -0.1 / 2))
     app.create_visual(plane, diffuse_color=agxRender.Color.Green())
     app.add(plane)
+

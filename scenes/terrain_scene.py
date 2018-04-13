@@ -1,5 +1,6 @@
 
 import agx
+import agxSDK
 import agxOSG
 import agxModel
 import agxCollide
@@ -45,12 +46,12 @@ def build_scene():
 
     app.create_sky()
 
-    terrain = Terrain()
-
     snake = Snake(6)
     snake.setRotation(agx.EulerAngles(math.pi / 2, 0, 0))
     snake.setPosition(agx.Vec3(0, .5, 0.3))
     app.add(snake)
+
+    terrain = Terrain()
 
     terrain_snake_cm = app.sim().getMaterialManager() \
         .getOrCreateContactMaterial(terrain.material, snake.material)  # type: agx.ContactMaterial
@@ -65,3 +66,18 @@ def build_scene():
         app.add_event_listener(ExampleSineMotion(snake, i))
 
     app.init_camera(eye=agx.Vec3(-2, -2, 1), center=agx.Vec3(0, 0, 0.5))
+
+    import agxSDK
+
+    class ReadSensor(agxSDK.StepEventListener):
+        def __init__(self):
+            super().__init__(agxSDK.StepEventListener.PRE_STEP)
+
+        def pre(self, time):
+            for i in range(0, snake.num_sensors):
+                print("Sensor{} force={}".format(i, len(app.get_contacts(snake.sensors[i]))))
+            print("\n")
+
+    app.add_event_listener(ReadSensor())
+
+

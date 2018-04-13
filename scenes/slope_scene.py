@@ -62,7 +62,7 @@ def build_scene():
     app.register_additional_scenes('build_scene2')
 
     angle = 0
-    for y in [ 0]:
+    for y in [-1, 0, 1]:
 
         angle += 10
         obstacle = Obstacle(0.5, angle)

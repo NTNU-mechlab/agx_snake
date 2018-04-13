@@ -134,7 +134,7 @@ def get_sum_force_magnitude(body: agx.RigidBody) -> float:
         points = gc.points()  # type: agxCollide.ContactPointVector
         for point in points:  # type: agxCollide.ContactPoint
             if point.getEnabled():
-                sum_force_mag += point.getForceMagnitude()
+                sum_force_mag += point.getNormalForceMagnitude()
 
     return sum_force_mag
 

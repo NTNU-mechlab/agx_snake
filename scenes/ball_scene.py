@@ -120,6 +120,6 @@ def build_scene():  # application entry point. Do not change method signature
 
     app.init_camera(eye=agx.Vec3(-1, -1, 0.5))
 
-    snake_controller = SnakeBallControl(snake, ball_body)
+    snake_controller = SnakeBallControl(snake, ball)
     snake_controller.init_turning(math.pi / 9.0, math.pi * 2.0 / 3.0, 8.0, 0.0, math.pi * 0.0 / 180.0)
     app.add_event_listener(snake_controller)

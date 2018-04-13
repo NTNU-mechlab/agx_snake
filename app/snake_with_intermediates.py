@@ -21,7 +21,7 @@ intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
 
 class IntermediatePart(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material):
+    def __init__(self, material: agx.Material=None):
         super().__init__()
 
         visual_geometry = agxCollide.Geometry(intermediate_shape.deepCopy(),
@@ -43,8 +43,9 @@ class IntermediatePart(agxSDK.Assembly):
         self.sensor = agx.RigidBody(sensor_geometry)
         self.add(self.sensor)
 
-        collision_geometry.setMaterial(material)
-        sensor_geometry.setMaterial(material)
+        if material is not None:
+            collision_geometry.setMaterial(material)
+            sensor_geometry.setMaterial(material)
 
         self.merged_body = agx.MergedBody()
         self.merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.body, self.sensor))
@@ -82,7 +83,7 @@ class UpperPart(agx.RigidBody):
 
 class TypeA(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material):
+    def __init__(self, material: agx.Material=None):
         super().__init__()
 
         self.len = 0
@@ -102,7 +103,7 @@ class TypeA(agxSDK.Assembly):
 
 class TypeB(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material):
+    def __init__(self, material: agx.Material=None):
         super().__init__()
 
         self.len = module_len + intermediate_len
@@ -127,7 +128,7 @@ class TypeB(agxSDK.Assembly):
 
 class TypeC(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material):
+    def __init__(self, material: agx.Material=None):
         super().__init__()
 
         self.len = (module_len*0.5) + intermediate_len

@@ -1,7 +1,7 @@
 
-from snake import SnakeApp
-from snake.snake_with_intermediates import Snake
-from snake.snake_with_intermediates import ExmapleSineMotion
+import app
+from app.snake_with_intermediates import Snake
+from app.snake_with_intermediates import ExampleSineMotion
 
 import agx
 import agxCollide
@@ -13,7 +13,7 @@ import math
 
 class Obstacle(agxSDK.Assembly):
 
-    def __init__(self, app: SnakeApp, length: float=0.5, angle: float=20):
+    def __init__(self, length: float=0.5, angle: float=20):
         super().__init__()
 
         self._slope_angle = math.radians(angle)
@@ -24,6 +24,8 @@ class Obstacle(agxSDK.Assembly):
             h = 0.1
             floor = agxCollide.Geometry(agxCollide.Box(2.5, 0.5, h), agx.AffineMatrix4x4.translate(0, 0, -h))
             app.create_visual(floor, diffuse_color=agxRender.Color.Green())
+            # body = agx.RigidBody(floor)
+            # body.setMotionControl(agx.RigidBody.STATIC)
             self.add(floor)
 
         add_floor()
@@ -57,23 +59,22 @@ class Obstacle(agxSDK.Assembly):
 
 def build_scene():
 
-    app = SnakeApp()
     app.register_additional_scenes('build_scene2')
 
     angle = 0
     for y in [-1, 0, 1]:
 
         angle += 10
-        obstacle = Obstacle(app, 0.5, angle)
+        obstacle = Obstacle(0.5, angle)
         obstacle.setLocalPosition(0, y, 0)
         app.add(obstacle)
 
-        snake = Snake(app, 5)
+        snake = Snake(5)
         snake.setLocalPosition(-0.1, y, 0.05)
         snake.setLocalRotation(agx.EulerAngles(math.pi / 2, 0, math.pi))
         app.add(snake)
 
-        snake_obstacle_cm = app.sim.getMaterialManager() \
+        snake_obstacle_cm = app.sim().getMaterialManager() \
             .getOrCreateContactMaterial(snake.material, obstacle.material)  # type: agx.ContactMaterial
 
         snake_obstacle_cm.setFrictionCoefficient(2)  # a lower makes contacts more slippery
@@ -85,30 +86,41 @@ def build_scene():
         snake_obstacle_cm.setFrictionModel(fm)
 
         for i in range(0, snake.num_servos):
-            sm = ExmapleSineMotion(snake, i)
+            sm = ExampleSineMotion(snake, i)
             sm.amplitude = math.radians(45)
             app.add_event_listener(sm)
 
+        import agxSDK
+
+        class ReadSensor(agxSDK.StepEventListener):
+            def __init__(self):
+                super().__init__(agxSDK.StepEventListener.POST_STEP)
+
+            def post(self, time):
+                for i in range(0, snake.num_sensors):
+                    print("Sensor{} force={}".format(i, snake.get_force_magnitude_at(i)))
+                print()
+
+        app.add_event_listener(ReadSensor())
+
 
 def build_scene2():
-
-    app = SnakeApp()
 
     angle = 0
     for y in [-1, 0, 1]:
 
         angle += 10
-        obstacle = Obstacle(app, 0.5, angle)
+        obstacle = Obstacle(0.5, angle)
         obstacle.setLocalPosition(0, y, 0)
         app.add(obstacle)
 
-        snake = Snake(app, 5)
+        snake = Snake(5)
         snake.setParentFrame(obstacle.slope.getFrame())
         snake.setLocalPosition(snake.len, 0, 0.05)
         snake.setLocalRotation(agx.EulerAngles(math.pi / 2, 0, math.pi))
         app.add(snake)
 
-        snake_obstacle_cm = app.sim.getMaterialManager() \
+        snake_obstacle_cm = app.sim().getMaterialManager() \
             .getOrCreateContactMaterial(snake.material, obstacle.material)  # type: agx.ContactMaterial
 
         snake_obstacle_cm.setFrictionCoefficient(2)  # a lower makes contacts more slippery
@@ -120,6 +132,6 @@ def build_scene2():
         snake_obstacle_cm.setFrictionModel(fm)
 
         for i in range(0, snake.num_servos):
-            sm = ExmapleSineMotion(snake, i)
+            sm = ExampleSineMotion(snake, i)
             sm.amplitude = math.radians(45)
             app.add_event_listener(sm)

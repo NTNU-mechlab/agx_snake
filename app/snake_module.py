@@ -1,8 +1,7 @@
 
-
-from snake import SnakeApp
-from snake import load_shape
-from snake import create_constraint
+import app
+from app import load_shape
+from app import create_constraint
 
 import agx
 import agxSDK
@@ -19,13 +18,13 @@ upper_shape = load_shape('assets/upper.obj')
 
 class Snake(agxSDK.Assembly):
 
-    def __init__(self, app: SnakeApp, num_modules: int, pitch_only=False):
+    def __init__(self, num_modules: int, pitch_only=False):
         super().__init__()
 
         self.modules = []
 
         for i in range(0, num_modules):
-            module = SnakeModule(app)
+            module = SnakeModule()
             module.setPosition(module_len*i, 0, 0)
             module.setRotation(agx.EulerAngles(math.pi / 2, 0, 0))
 
@@ -44,10 +43,8 @@ class Snake(agxSDK.Assembly):
 
 class SnakeModule(agxSDK.Assembly):
 
-    def __init__(self, app: SnakeApp):
+    def __init__(self):
         super().__init__()
-
-        self.app = app
 
         servo = agxCollide.Geometry(servo_shape.deepCopy())
         servo.setEnableCollisions(False)
@@ -74,5 +71,3 @@ class SnakeModule(agxSDK.Assembly):
         self.add(self.hinge)
         self.add(self.upper)
 
-    def get_hinge(self):
-        return self.hinge

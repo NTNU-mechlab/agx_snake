@@ -1,4 +1,3 @@
-
 import agx
 import agxIO
 import agxSDK
@@ -47,15 +46,14 @@ def get_time():
 
 
 def register_additional_scenes(*additional_scenes):
-
     if len(additional_scenes) > 0:
 
         def add_scene(name):
-            scene_key = app().getNumScenes()+1
+            scene_key = app().getNumScenes() + 1
             app().addScene(script_file_name, name, ord(ascii(scene_key)), True)
 
         script_file_name = app().getArguments().getArgumentName(1)
-        script_file_name=script_file_name.replace('agxscene:', '')
+        script_file_name = script_file_name.replace('agxscene:', '')
         print(script_file_name)
 
         for scene in additional_scenes:
@@ -73,7 +71,6 @@ def load_shape(path) -> agxCollide.Trimesh:
 
 def create_visual(obj, diffuse_color: Color = None, ambient_color: Color = None,
                   shininess=None, alpha: float = None):
-
     node = agxOSG.createVisual(obj, root())
 
     if diffuse_color is not None:
@@ -92,7 +89,6 @@ def create_visual(obj, diffuse_color: Color = None, ambient_color: Color = None,
 
 
 def create_sky():
-
     c1 = Color.SkyBlue()
     c2 = Color.DodgerBlue()
 
@@ -123,7 +119,6 @@ def get_contacts(body: agx.RigidBody) -> list:
 
 
 def get_sum_force_magnitude(body: agx.RigidBody) -> float:
-
     sum_force_mag = 0
     contacts = agxCollide.GeometryContactPtrVector()
     space = sim().getSpace()  # type: agxCollide.Space
@@ -140,7 +135,6 @@ def get_sum_force_magnitude(body: agx.RigidBody) -> float:
 
 
 def create_constraint(**kwds) -> agx.Constraint:
-
     if 'pos' in kwds:
         pos = kwds['pos']
     else:
@@ -163,9 +157,17 @@ def create_constraint(**kwds) -> agx.Constraint:
 
 
 if agxPython.getContext() is None:
+
+    import os
+    if os.name == "posix":
+        agx_dir = os.environ['AGX_DIR']
+        agxIO.Environment_instance().getFilePath(agxIO.Environment.RESOURCE_PATH).addFilePath(agx_dir)
+        agxIO.Environment_instance().getFilePath(agxIO.Environment.RESOURCE_PATH).addFilePath(agx_dir + "/data")
+
     init = agx.AutoInit()
 
     import sys
+
     argParser = agxIO.ArgumentParser([sys.executable] + sys.argv)
     example_app = agxOSG.ExampleApplication()
     example_app.addScene(argParser.getArgumentName(1), "build_scene", ord('1'), True)

@@ -53,7 +53,6 @@ class SnakeBallControl(SnakeControl):
     def __init__(self, snake, ball):
         super().__init__(snake)
         self.ball = ball
-        self.snakeFile_ID = open("snake_pos.txt", "w")
 
     def pre(self, tt):
         super().pre(tt)
@@ -62,13 +61,6 @@ class SnakeBallControl(SnakeControl):
         snake_head_pos = self.snake.modules[0].bottom.getPosition()
         snake_center_pos = self.snake.modules[2].bottom.getPosition()
         snake_tail_pos = self.snake.modules[4].bottom.getPosition()
-
-        self.snakeFile_ID.write("{0:.3f}\t".format(tt) +
-                                      "{0:.3f}\t".format(snake_center_pos.x()) +
-                                      "{0:.3f}\t".format(snake_center_pos.y()) +
-                                      "{0:.3f}\n".format(snake_center_pos.z()))
-        # print("{0:.3f}\t".format(tt) + "{0:.3f}\t".format(snake_center_pos.x())
-        #      + "{0:.3f}\t".format(snake_center_pos.y()) + "{0:.3f}\n".format(snake_center_pos.z()))
 
         U = agx.Vec2(snake_head_pos.x() - snake_tail_pos.x(),
                      snake_head_pos.y() - snake_tail_pos.y())  # snake_orientation
@@ -104,7 +96,7 @@ def build_scene():  # application entry point. Do not change method signature
     app = SnakeApp()
     app.register_additional_scenes('build_scene_2')
 
-    snake = Snake(app, NUM_SNAKE_MODULES, pitch_only=False)  # type: snake_module.Snake
+    snake = Snake(app, NUM_SNAKE_MODULES, pitch_only=False)  # type: Snake
     snake.setPosition(agx.Vec3(0, 0, 0.1))
     app.add(snake)
 

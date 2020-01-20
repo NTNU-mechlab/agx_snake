@@ -1,7 +1,7 @@
 
-from snake import SnakeApp
-from snake.snake_module import Snake
-from snake.snake_control import *
+import app
+from app.snake_module import Snake
+from app.snake_control import *
 
 import agx
 import agxRender
@@ -12,9 +12,9 @@ import math
 NUM_SNAKE_MODULES = 5
 
 
-def setup_scene(app: SnakeApp, i: int):
+def setup_scene(i: int):
 
-    snake = Snake(app, NUM_SNAKE_MODULES, pitch_only=False)  # type: snake_module.Snake
+    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False)  # type: Snake
     snake.setPosition(agx.Vec3(0, 0, 0.1))
     app.add(snake)
 
@@ -32,7 +32,7 @@ def setup_scene(app: SnakeApp, i: int):
     elif i == TURNING:
         snake_controller.init_turning(math.pi / 9.0, math.pi * 2.0 / 3.0, 8.0, 0.0, math.pi * 20.0 / 180.0)
     elif i == SIDEWINDING:
-        snake_controller.init_sidewinding(math.pi / 9.0, math.pi / 9.0, math.pi * 2.0 / 3.0, 16.0)
+        snake_controller.init_sidewinding(math.pi / 9.0, math.pi * 2.0 / 3.0, 16.0)
     elif i == ROLLING:
         snake_controller.init_rolling(math.pi / 6.0, math.pi / 6.0, 16.0)
     elif i == ROTATING:
@@ -44,26 +44,21 @@ def setup_scene(app: SnakeApp, i: int):
 
 
 def build_scene():  # application entry point. Do not change method signature
-    app = SnakeApp()
     app.register_additional_scenes('build_scene_2', 'build_scene_3', 'build_scene_4', 'build_scene_5')
-    setup_scene(app, FLAPPING)
+    setup_scene(FLAPPING)
 
 
 def build_scene_2():  # application entry point. Do not change method signature
-    app = SnakeApp()
-    setup_scene(app, TURNING)
+    setup_scene(TURNING)
 
 
 def build_scene_3():  # application entry point. Do not change method signature
-    app = SnakeApp()
-    setup_scene(app, SIDEWINDING)
+    setup_scene(SIDEWINDING)
 
 
 def build_scene_4():  # application entry point. Do not change method signature
-    app = SnakeApp()
-    setup_scene(app, ROLLING)
+    setup_scene(ROLLING)
 
 
 def build_scene_5():  # application entry point. Do not change method signature
-    app = SnakeApp()
-    setup_scene(app, ROTATING)
+    setup_scene(ROTATING)

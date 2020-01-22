@@ -105,3 +105,5 @@ ENV/
 agx_statistics.txt
 
 /**/snake_pos.txt
+
+*.blend1

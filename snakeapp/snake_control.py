@@ -26,10 +26,10 @@ class SnakeControl(agxSDK.StepEventListener):
         super().__init__(agxSDK.StepEventListener.PRE_STEP)
 
         self.snake = snake
-        self.phi = [None] * len(snake.modules)   # list of phase difference
-        self.am = [None] * len(snake.modules)  # list of amplitudes, in rad
-        self.desire_angle = [None] * len(snake.modules)
-        self.offset = [None] * len(snake.modules)
+        self.phi = [0.0] * len(snake.modules)   # list of phase difference
+        self.am = [0.0] * len(snake.modules)  # list of amplitudes, in rad
+        self.desire_angle = [0.0] * len(snake.modules)
+        self.offset = [0.0] * len(snake.modules)
         self.fixed_angle = [False] * len(snake.modules)  # fixed angle is used for the yaw group for the forward or the turning gait
 
         self.sample_time = 0
@@ -60,7 +60,7 @@ class SnakeControl(agxSDK.StepEventListener):
     def init_turning(self, amplitude_p, phi_p, period, offset_p, offset_y):
         self.control_group_init(amplitude_p, 0.0, phi_p, 0.0, 0.0, period, offset_p, offset_y)
         for i in range(0, len(self.snake.modules)):
-            if i % 2 != 0: # yaw group
+            if i % 2 != 0:  # yaw group
                 self.fixed_angle[i] = True
                 self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(True)
 
@@ -70,7 +70,7 @@ class SnakeControl(agxSDK.StepEventListener):
             self.fixed_angle[i] = False
             self.snake.modules[i].hinge.getMotor1D().setLockedAtZeroSpeed(False)
 
-    def init_rolling(self, amplitude_p, amplitude_y, period): # phi_y = phi_x = 0, phi_py = pi/2
+    def init_rolling(self, amplitude_p, amplitude_y, period):  # phi_y = phi_x = 0, phi_py = pi/2
         self.control_group_init(amplitude_p, amplitude_y, 0.0, 0.0, math.pi / 2, period, 0.0, 0.0)
         for i in range(0, len(self.snake.modules)):
             self.fixed_angle[i] = False

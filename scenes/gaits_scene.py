@@ -1,7 +1,7 @@
 
-import app
-from app.snake_module import Snake
-from app.snake_control import *
+import snakeapp
+from snakeapp.snake_module_new import Snake
+from snakeapp.snake_control import *
 
 import agx
 import agxRender
@@ -14,16 +14,16 @@ NUM_SNAKE_MODULES = 5
 
 def setup_scene(i: int):
 
-    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False)  # type: Snake
+    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False, with_camera=True)  # type: Snake
     snake.setPosition(agx.Vec3(0, 0, 0.1))
-    app.add(snake)
+    snakeapp.add(snake)
 
     plane_body = agx.RigidBody(
         agxCollide.Geometry(agxCollide.Box(2, 2, 0.1), agx.AffineMatrix4x4.translate(0, 0, -0.1 / 2)))
 
     plane_body.setMotionControl(agx.RigidBody.STATIC)
-    app.create_visual(plane_body, diffuse_color=agxRender.Color.Green())
-    app.add(plane_body)
+    snakeapp.create_visual(plane_body, diffuse_color=agxRender.Color.Green())
+    snakeapp.add(plane_body)
 
     snake_controller = SnakeControl(snake)
 
@@ -38,13 +38,13 @@ def setup_scene(i: int):
     elif i == ROTATING:
         snake_controller.init_rotating(math.pi / 6.0, math.pi / 6.0, 16.0)
 
-    app.add_event_listener(snake_controller)
+    snakeapp.add_event_listener(snake_controller)
 
-    app.init_camera(eye=agx.Vec3(-1, -1, 0.5), center=plane_body.getPosition())
+    snakeapp.init_camera(eye=agx.Vec3(-1, -1, 0.5), center=plane_body.getPosition())
 
 
 def build_scene():  # application entry point. Do not change method signature
-    app.register_additional_scenes('build_scene_2', 'build_scene_3', 'build_scene_4', 'build_scene_5')
+    snakeapp.register_additional_scenes('build_scene_2', 'build_scene_3', 'build_scene_4', 'build_scene_5')
     setup_scene(FLAPPING)
 
 

@@ -1,7 +1,7 @@
 
-import app
-from app.snake_module import Snake
-from app.snake_control import *
+import snakeapp
+from snakeapp.snake_module_new import Snake
+from snakeapp.snake_control import *
 
 import agx
 import agxSDK
@@ -93,25 +93,25 @@ class SnakeBallControl(SnakeControl):
 
 def build_scene():  # application entry point. Do not change method signature
 
-    app.register_additional_scenes('build_scene_2')
+    snakeapp.register_additional_scenes('build_scene_2')
 
-    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False)  # type: snake_module.Snake
+    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False, with_camera=True)  # type: snake_module.Snake
     snake.setPosition(agx.Vec3(0, 0, 0.1))
-    app.add(snake)
+    snakeapp.add(snake)
 
     plane = agxCollide.Geometry(agxCollide.Box(2, 2, 0.1), agx.AffineMatrix4x4.translate(0, 0, -0.1/2))
-    app.create_visual(plane, diffuse_color=agxRender.Color.Green())
-    app.add(plane)
+    snakeapp.create_visual(plane, diffuse_color=agxRender.Color.Green())
+    snakeapp.add(plane)
 
     ball = agxCollide.Geometry(agxCollide.Sphere(0.035), agx.AffineMatrix4x4.translate(0, 0, 0))
-    app.create_visual(ball, diffuse_color=agxRender.Color.YellowGreen())
+    snakeapp.create_visual(ball, diffuse_color=agxRender.Color.YellowGreen())
     ball.setPosition(agx.Vec3(-0.5, 0, 0.1))
-    app.add(ball)
+    snakeapp.add(ball)
 
-    app.add_event_listener(MyKeyEvent(ball))
+    snakeapp.add_event_listener(MyKeyEvent(ball))
 
-    app.init_camera(eye=agx.Vec3(-1, -1, 0.5))
+    snakeapp.init_camera(eye=agx.Vec3(-1, -1, 0.5))
 
     snake_controller = SnakeBallControl(snake, ball)
     snake_controller.init_turning(math.pi / 9.0, math.pi * 2.0 / 3.0, 8.0, 0.0, math.pi * 0.0 / 180.0)
-    app.add_event_listener(snake_controller)
+    snakeapp.add_event_listener(snake_controller)

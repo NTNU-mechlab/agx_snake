@@ -1,7 +1,7 @@
 
-import app
-from app import load_shape
-from app import create_constraint
+import snakeapp
+from snakeapp import load_shape
+from snakeapp import create_constraint
 
 import agx
 import agxSDK
@@ -11,9 +11,9 @@ import agxRender
 import math
 
 module_len = 0.075
-servo_shape = load_shape('assets/servo.obj')
-bottom_shape = load_shape('assets/bottom.obj')
-upper_shape = load_shape('assets/upper.obj')
+servo_shape = load_shape('assets/76mm/servo.obj')
+bottom_shape = load_shape('assets/76mm/bottom.obj')
+upper_shape = load_shape('assets/76mm/upper.obj')
 
 
 class Snake(agxSDK.Assembly):
@@ -35,7 +35,7 @@ class Snake(agxSDK.Assembly):
             if i > 0:
                 merged_body = agx.MergedBody()
                 merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.modules[i - 1].upper, module.bottom))
-                app.add(merged_body)
+                snakeapp.add(merged_body)
 
             self.modules.append(module)
             self.add(module)
@@ -48,17 +48,17 @@ class SnakeModule(agxSDK.Assembly):
 
         servo = agxCollide.Geometry(servo_shape.deepCopy())
         servo.setEnableCollisions(False)
-        app.create_visual(servo, diffuse_color=agxRender.Color.Black())
+        snakeapp.create_visual(servo, diffuse_color=agxRender.Color.Black())
 
         self.bottom = agx.RigidBody(agxCollide.Geometry(bottom_shape.deepCopy()))
         self.bottom.add(servo)
-        app.create_visual(self.bottom, agxRender.Color.Orange())
+        snakeapp.create_visual(self.bottom, agxRender.Color.Orange())
 
         self.upper = agx.RigidBody(agxCollide.Geometry(upper_shape.deepCopy()))
-        app.create_visual(self.upper, agxRender.Color.Orange())
+        snakeapp.create_visual(self.upper, agxRender.Color.Orange())
 
         self.hinge = create_constraint(
-            pos=agx.Vec3(0.0, 0.007, 0), axis=agx.agx.Vec3(0, 0, -1),
+            pos=agx.Vec3(0.0, 0.0007, 0), axis=agx.agx.Vec3(0, 0, -1),
             rb1=self.bottom, rb2=self.upper, c=agx.Hinge)  # type: agx.Hinge
 
         self.hinge.setCompliance(1E-12)

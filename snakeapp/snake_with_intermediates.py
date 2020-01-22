@@ -6,14 +6,14 @@ import agxRender
 
 import math
 
-import app
+import snakeapp
 
 module_len = 0.0725
 intermediate_len = 0.025
-servo_shape = app.load_shape('assets/servo.obj')
-bottom_shape = app.load_shape('assets/bottom.obj')
-upper_shape = app.load_shape('assets/upper.obj')
-intermediate_shape = app.load_shape('assets/intermediate.obj')
+servo_shape = snakeapp.load_shape('assets/76mm/servo.obj')
+bottom_shape = snakeapp.load_shape('assets/76mm/bottom.obj')
+upper_shape = snakeapp.load_shape('assets/76mm/upper.obj')
+intermediate_shape = snakeapp.load_shape('assets/76mm/intermediate.obj')
 
 sensor_bounds = agx.Vec3(0.0085, 0.002, 0.02)
 intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
@@ -28,7 +28,7 @@ class IntermediatePart(agxSDK.Assembly):
                                               agx.AffineMatrix4x4.rotate(math.pi/2, 0, 1, 0) *
                                               agx.AffineMatrix4x4.rotate(math.pi, 1, 0, 0))
         visual_geometry.setEnableCollisions(False)
-        app.create_visual(visual_geometry, agxRender.Color.Orange())
+        snakeapp.create_visual(visual_geometry, agxRender.Color.Orange())
 
         collision_geometry = agxCollide.Geometry(agxCollide.Box(intermediate_bounds),
                                                  agx.AffineMatrix4x4.translate(intermediate_len/2, 0, 0))
@@ -49,7 +49,7 @@ class IntermediatePart(agxSDK.Assembly):
 
         self.merged_body = agx.MergedBody()
         self.merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.body, self.sensor))
-        app.add(self.merged_body)
+        snakeapp.add(self.merged_body)
 
 
 class BottomPart(agx.RigidBody):
@@ -59,11 +59,11 @@ class BottomPart(agx.RigidBody):
 
         servo_geometry = agxCollide.Geometry(servo_shape.deepCopy())
         servo_geometry.setEnableCollisions(False)
-        app.create_visual(servo_geometry, agxRender.Color.Gray())
+        snakeapp.create_visual(servo_geometry, agxRender.Color.Gray())
 
         bottom_geometry = agxCollide.Geometry(bottom_shape.deepCopy())
         bottom_geometry.setEnableCollisions(False)
-        app.create_visual(bottom_geometry, agxRender.Color.Black())
+        snakeapp.create_visual(bottom_geometry, agxRender.Color.Black())
 
         self.add(servo_geometry)
         self.add(bottom_geometry)
@@ -76,7 +76,7 @@ class UpperPart(agx.RigidBody):
 
         upper_geometry = agxCollide.Geometry(upper_shape.deepCopy())
         upper_geometry.setEnableCollisions(False)
-        app.create_visual(upper_geometry, agxRender.Color.Black())
+        snakeapp.create_visual(upper_geometry, agxRender.Color.Black())
 
         self.add(upper_geometry)
 
@@ -98,7 +98,7 @@ class TypeA(agxSDK.Assembly):
 
         merged_body = self.intermediate.merged_body
         merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.intermediate.body, self.bottom))
-        app.add(merged_body)
+        snakeapp.add(merged_body)
 
 
 class TypeB(agxSDK.Assembly):
@@ -123,7 +123,7 @@ class TypeB(agxSDK.Assembly):
         merged_body = self.intermediate.merged_body
         merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.upper, self.intermediate.body))
         merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.intermediate.body, self.bottom))
-        app.add(merged_body)
+        snakeapp.add(merged_body)
 
 
 class TypeC(agxSDK.Assembly):
@@ -143,7 +143,7 @@ class TypeC(agxSDK.Assembly):
 
         merged_body = self.intermediate.merged_body
         merged_body.add(agx.MergedBodyEmptyEdgeInteraction(self.upper, self.intermediate.body))
-        app.add(merged_body)
+        snakeapp.add(merged_body)
 
 
 class Snake(agxSDK.Assembly):
@@ -161,7 +161,7 @@ class Snake(agxSDK.Assembly):
         def connect(rb1: agx.RigidBody, rb2: agx.RigidBody):
             axis = agx.Vec3(0, 0, -1)
             pos = agx.Vec3(0.0, 0.007, 0)
-            hinge = app.create_constraint(
+            hinge = snakeapp.create_constraint(
                 pos=pos, axis=axis, c=agx.Hinge, rb1=rb1, rb2=rb2)  # type: agx.Hinge
             hinge.setCompliance(1E-12)
             hinge.getMotor1D().setEnable(True)
@@ -212,12 +212,12 @@ class Snake(agxSDK.Assembly):
     def get_contacts(self, contacts: list=[]) -> list:
         contacts.clear()
         for sensor in self.sensors:  # type: agx.RigidBody
-            c = app.get_contacts(sensor)
+            c = snakeapp.get_contacts(sensor)
             contacts.append(c)
         return contacts
 
     def get_force_magnitude_at(self, intermediate_index):
-        return app.get_sum_force_magnitude(self.sensors[intermediate_index])
+        return snakeapp.get_sum_force_magnitude(self.sensors[intermediate_index])
 
     def set_hinge_compliance(self, compliance):
         for servo in self.servos:

@@ -1,6 +1,6 @@
 
 import snakeapp
-from snakeapp.snake_module_new import Snake
+from snakeapp.snake_module import Snake
 from snakeapp.snake_control import *
 
 import agx
@@ -95,7 +95,7 @@ def build_scene():  # application entry point. Do not change method signature
 
     snakeapp.register_additional_scenes('build_scene_2')
 
-    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False, with_camera=True)  # type: snake_module.Snake
+    snake = Snake(NUM_SNAKE_MODULES, pitch_only=False)#, with_camera=True)  # type: snake_module.Snake
     snake.setPosition(agx.Vec3(0, 0, 0.1))
     snakeapp.add(snake)
 

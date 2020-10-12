@@ -73,9 +73,10 @@ def build_scene():
             super().__init__(agxSDK.StepEventListener.POST_STEP)
 
         def post(self, time):
-            for i in range(0, snake.num_sensors):
-                print("Sensor{} force={}".format(i, snakeapp.get_sum_force_magnitude(snake.sensors[i])))
-            print("")
+            pass
+            # for i in range(0, snake.num_sensors):
+            #     print("Sensor{} force={}".format(i, snakeapp.get_sum_force_magnitude(snake.sensors[i])))
+            # print("")
 
     snakeapp.add_event_listener(ReadSensor())
 

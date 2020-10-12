@@ -1,4 +1,3 @@
-
 import agx
 import agxSDK
 import agxCollide
@@ -21,17 +20,17 @@ intermediate_bounds = agx.Vec3(0.013, 0.0325, 0.0325)
 
 class IntermediatePart(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material=None):
+    def __init__(self, material: agx.Material = None):
         super().__init__()
 
         visual_geometry = agxCollide.Geometry(intermediate_shape.deepCopy(),
-                                              agx.AffineMatrix4x4.rotate(math.pi/2, 0, 1, 0) *
+                                              agx.AffineMatrix4x4.rotate(math.pi / 2, 0, 1, 0) *
                                               agx.AffineMatrix4x4.rotate(math.pi, 1, 0, 0))
         visual_geometry.setEnableCollisions(False)
         snakeapp.create_visual(visual_geometry, agxRender.Color.Orange())
 
         collision_geometry = agxCollide.Geometry(agxCollide.Box(intermediate_bounds),
-                                                 agx.AffineMatrix4x4.translate(intermediate_len/2, 0, 0))
+                                                 agx.AffineMatrix4x4.translate(intermediate_len / 2, 0, 0))
 
         self.body = agx.RigidBody()
         self.body.add(visual_geometry)
@@ -39,7 +38,7 @@ class IntermediatePart(agxSDK.Assembly):
         self.add(self.body)
 
         sensor_geometry = agxCollide.Geometry(agxCollide.Box(sensor_bounds),
-                                              agx.AffineMatrix4x4.translate(intermediate_len/2, -0.035, 0))
+                                              agx.AffineMatrix4x4.translate(intermediate_len / 2, -0.035, 0))
         self.sensor = agx.RigidBody(sensor_geometry)
         self.add(self.sensor)
 
@@ -83,7 +82,7 @@ class UpperPart(agx.RigidBody):
 
 class TypeA(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material=None):
+    def __init__(self, material: agx.Material = None):
         super().__init__()
 
         self.len = 0
@@ -103,7 +102,7 @@ class TypeA(agxSDK.Assembly):
 
 class TypeB(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material=None):
+    def __init__(self, material: agx.Material = None):
         super().__init__()
 
         self.len = module_len + intermediate_len
@@ -128,15 +127,15 @@ class TypeB(agxSDK.Assembly):
 
 class TypeC(agxSDK.Assembly):
 
-    def __init__(self, material: agx.Material=None):
+    def __init__(self, material: agx.Material = None):
         super().__init__()
 
-        self.len = (module_len*0.5) + intermediate_len
+        self.len = (module_len * 0.5) + intermediate_len
 
         self.upper = UpperPart()
         self.intermediate = IntermediatePart(material)
         self.intermediate.setRotation(agx.EulerAngles(math.pi, 0, math.pi))
-        self.intermediate.setPosition(agx.Vec3(module_len/2 + intermediate_len, 0, 0))
+        self.intermediate.setPosition(agx.Vec3(module_len / 2 + intermediate_len, 0, 0))
 
         self.add(self.upper)
         self.add(self.intermediate)
@@ -148,7 +147,7 @@ class TypeC(agxSDK.Assembly):
 
 class Snake(agxSDK.Assembly):
 
-    def __init__(self, num_servos: int=2):
+    def __init__(self, num_servos: int = 2):
         super().__init__()
 
         self.servos = []  # type: list[agx.Hinge]
@@ -168,7 +167,7 @@ class Snake(agxSDK.Assembly):
             hinge.getMotor1D().setCompliance(1E-12)
             hinge.getLock1D().setEnable(False)
             hinge.getRange1D().setEnable(True)
-            hinge.getRange1D().setRange(-math.pi/2, math.pi)
+            hinge.getRange1D().setRange(-math.pi / 2, math.pi)
             self.add(hinge)
             self.servos.append(hinge)
 
@@ -176,7 +175,7 @@ class Snake(agxSDK.Assembly):
             self.len += part.len
             self.add(part)
 
-        last_part = None  # type: agx.RigidBody
+        last_part = None
         for i in range(0, num_servos):
 
             if i == 0:
@@ -189,7 +188,7 @@ class Snake(agxSDK.Assembly):
                 self.sensors.append(type_a.intermediate.sensor)
                 self.sensors.append(type_b.intermediate.sensor)
                 last_part = type_b
-            elif i == num_servos-1:
+            elif i == num_servos - 1:
                 type_b = last_part  # type: TypeB
                 type_c = TypeC(self.material)
                 type_c.setPosition(type_b.getPosition().x() + type_b.len, 0, 0)
@@ -209,7 +208,9 @@ class Snake(agxSDK.Assembly):
         self.num_servos = len(self.servos)
         self.num_sensors = len(self.sensors)
 
-    def get_contacts(self, contacts: list=[]) -> list:
+    def get_contacts(self, contacts=None) -> list:
+        if contacts is None:
+            contacts = []
         contacts.clear()
         for sensor in self.sensors:  # type: agx.RigidBody
             c = snakeapp.get_contacts(sensor)
@@ -232,15 +233,16 @@ class ExampleSineMotion(agxSDK.StepEventListener):
         self.snake = snake
 
         self._omega = None
+        self._period = None
         self.set_period(2)
 
         self.amplitude = math.radians(35)
 
-        t = (1/(snake.num_servos-2)) * servo_index
+        t = (1 / (snake.num_servos - 2)) * servo_index
         self.v0 = 0
-        self.v1 = math.pi*2
+        self.v1 = math.pi * 2
 
-        self._phase = (1-t) * self.v0 + t * self.v1
+        self._phase = (1 - t) * self.v0 + t * self.v1
         print("servo{} phase={}".format(servo_index, math.degrees(self._phase)))
 
         self.hinge = snake.servos[servo_index]
@@ -250,6 +252,7 @@ class ExampleSineMotion(agxSDK.StepEventListener):
 
     def set_period(self, period: float):
         f = 1 / period
+        self._period = period
         self._omega = 2 * math.pi * f
 
     def pre(self, time):

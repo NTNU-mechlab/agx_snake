@@ -1,4 +1,3 @@
-
 import snakeapp
 from snakeapp import load_shape
 from snakeapp import create_constraint
@@ -21,11 +20,13 @@ class Snake(agxSDK.Assembly):
     def __init__(self, num_modules: int, pitch_only=False):
         super().__init__()
 
+        self.material = agx.Material("snake_material_{}".format(self.getUuid().__str__))
+
         self.modules = []
 
         for i in range(0, num_modules):
-            module = SnakeModule()
-            module.setPosition(module_len*i, 0, 0)
+            module = SnakeModule(self.material)
+            module.setPosition(module_len * i, 0, 0)
             module.setRotation(agx.EulerAngles(math.pi / 2, 0, 0))
 
             if not pitch_only:
@@ -43,7 +44,7 @@ class Snake(agxSDK.Assembly):
 
 class SnakeModule(agxSDK.Assembly):
 
-    def __init__(self):
+    def __init__(self, material: agx.Material = None):
         super().__init__()
 
         servo = agxCollide.Geometry(servo_shape.deepCopy())
@@ -57,6 +58,10 @@ class SnakeModule(agxSDK.Assembly):
         self.upper = agx.RigidBody(agxCollide.Geometry(upper_shape.deepCopy()))
         snakeapp.create_visual(self.upper, agxRender.Color.Orange())
 
+        if material is not None:
+            self.bottom.getGeometries()[0].setMaterial(material)
+            self.upper.getGeometries()[0].setMaterial(material)
+
         self.hinge = create_constraint(
             pos=agx.Vec3(0.0, 0.0007, 0), axis=agx.agx.Vec3(0, 0, -1),
             rb1=self.bottom, rb2=self.upper, c=agx.Hinge)  # type: agx.Hinge
@@ -65,9 +70,8 @@ class SnakeModule(agxSDK.Assembly):
         self.hinge.getMotor1D().setCompliance(1E-10)
         self.hinge.getMotor1D().setEnable(True)
         self.hinge.getLock1D().setEnable(False)
-        self.hinge.getRange1D().setRange(-math.pi/2, math.pi/2)
+        self.hinge.getRange1D().setRange(-math.pi / 2, math.pi / 2)
 
         self.add(self.bottom)
         self.add(self.hinge)
         self.add(self.upper)
-

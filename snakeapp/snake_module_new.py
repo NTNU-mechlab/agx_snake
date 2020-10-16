@@ -22,10 +22,12 @@ class Snake(agxSDK.Assembly):
     def __init__(self, num_modules: int, pitch_only=False, with_camera=False):
         super().__init__()
 
+        self.material = agx.Material("snake_material_{}".format(self.getUuid().__str__))
+
         self.modules = []
 
         for i in range(0, num_modules):
-            module = SnakeModule(with_camera)
+            module = SnakeModule(self.material, with_camera)
             module.setPosition(module_len*i, 0, 0)
             module.setRotation(agx.EulerAngles(math.pi / 2, 0, 0))
 
@@ -44,7 +46,7 @@ class Snake(agxSDK.Assembly):
 
 class SnakeModule(agxSDK.Assembly):
 
-    def __init__(self, with_camera):
+    def __init__(self, material: agx.Material, with_camera: bool):
         super().__init__()
 
         servo = agxCollide.Geometry(servo_shape.deepCopy())
@@ -60,6 +62,10 @@ class SnakeModule(agxSDK.Assembly):
         else:
             self.upper = agx.RigidBody(agxCollide.Geometry(upper_shape.deepCopy()))
         snakeapp.create_visual(self.upper, agxRender.Color.Orange())
+
+        if material is not None:
+            self.upper.getGeometries()[0].setMaterial(material)
+            self.bottom.getGeometries()[0].setMaterial(material)
 
         self.hinge = create_constraint(
             pos=agx.Vec3(0.005, 0.0, 0), axis=agx.agx.Vec3(0, 0, -1),

@@ -33,16 +33,16 @@ class MyKeyEvent(agxSDK.GuiEventListener):
 
     def keyboard(self, key, alt, x, y, down):
         handled = False
-        if key == agxSDK.GuiEventListener.KEY_Down:
+        if key == agxSDK.GuiEventListener.KEY_Left:
             self.ball.setPosition(self.ball.getPosition() + agx.Vec3(-self.interval, 0, 0))
             handled = True
-        elif key == agxSDK.GuiEventListener.KEY_Up:
+        elif key == agxSDK.GuiEventListener.KEY_Right:
             self.ball.setPosition(self.ball.getPosition() + agx.Vec3(self.interval, 0, 0))
             handled = True
-        elif key == agxSDK.GuiEventListener.KEY_Left:
+        elif key == agxSDK.GuiEventListener.KEY_Up:
             self.ball.setPosition(self.ball.getPosition() + agx.Vec3(0, self.interval, 0))
             handled = True
-        elif key == agxSDK.GuiEventListener.KEY_Right:
+        elif key == agxSDK.GuiEventListener.KEY_Down:
             self.ball.setPosition(self.ball.getPosition() + agx.Vec3(0, -self.interval, 0))
             handled = True
         return handled

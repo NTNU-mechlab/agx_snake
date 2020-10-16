@@ -1,4 +1,3 @@
-
 import snakeapp
 from snakeapp.snake_with_intermediates import Snake
 from snakeapp.snake_with_intermediates import ExampleSineMotion
@@ -13,7 +12,7 @@ import math
 
 class Obstacle(agxSDK.Assembly):
 
-    def __init__(self, length: float=0.5, angle: float=20):
+    def __init__(self, length: float = 0.5, angle: float = 20):
         super().__init__()
 
         self._slope_angle = math.radians(angle)
@@ -24,8 +23,6 @@ class Obstacle(agxSDK.Assembly):
             h = 0.1
             floor = agxCollide.Geometry(agxCollide.Box(2.5, 0.5, h), agx.AffineMatrix4x4.translate(0, 0, -h))
             snakeapp.create_visual(floor, diffuse_color=agxRender.Color.Green())
-            # body = agx.RigidBody(floor)
-            # body.setMotionControl(agx.RigidBody.STATIC)
             self.add(floor)
 
         add_floor()
@@ -46,7 +43,8 @@ class Obstacle(agxSDK.Assembly):
         def add_box():
             height = math.sin(self._slope_angle) * length
             half_extents = agx.Vec3(0.5, 0.1, height)
-            box = agxCollide.Geometry(agxCollide.Box(half_extents), agx.AffineMatrix4x4.translate(0, 0, half_extents.z()))
+            box = agxCollide.Geometry(agxCollide.Box(half_extents),
+                                      agx.AffineMatrix4x4.translate(0, 0, half_extents.z()))
             box.setParentFrame(self.slope.getParentFrame())
             box.setLocalPosition(0.5 + math.cos(self._slope_angle), 0, 0)
             snakeapp.create_visual(box, diffuse_color=agxRender.Color.Yellow())
@@ -58,7 +56,6 @@ class Obstacle(agxSDK.Assembly):
 
 
 def build_scene():
-
     snakeapp.register_additional_scenes('build_scene2')
 
     angle = 0
@@ -70,8 +67,8 @@ def build_scene():
         snakeapp.add(obstacle)
 
         snake = Snake(5)
-        snake.setLocalPosition(-0.1, y, 0.05)
-        snake.setLocalRotation(agx.EulerAngles(math.pi / 2, 0, math.pi))
+        snake.setLocalPosition(-0.5, y, 0.05)
+        snake.setLocalRotation(agx.EulerAngles(math.pi / 2, 0, 0))
         snakeapp.add(snake)
 
         snake_obstacle_cm = snakeapp.sim().getMaterialManager() \
@@ -87,25 +84,27 @@ def build_scene():
 
         for i in range(0, snake.num_servos):
             sm = ExampleSineMotion(snake, i)
-            sm.amplitude = math.radians(45)
+            if i % 2 == 0:
+                sm.amplitude = math.radians(-90)
+            else:
+                sm.amplitude = math.radians(30)
             snakeapp.add_event_listener(sm)
 
-        import agxSDK
-
-        class ReadSensor(agxSDK.StepEventListener):
-            def __init__(self):
-                super().__init__(agxSDK.StepEventListener.POST_STEP)
-
-            def post(self, time):
-                for i in range(0, snake.num_sensors):
-                    print("Sensor{} force={}".format(i, snake.get_force_magnitude_at(i)))
-                print()
-
-        snakeapp.add_event_listener(ReadSensor())
+        # import agxSDK
+        #
+        # class ReadSensor(agxSDK.StepEventListener):
+        #     def __init__(self):
+        #         super().__init__(agxSDK.StepEventListener.POST_STEP)
+        #
+        #     def post(self, time):
+        #         for i in range(0, snake.num_sensors):
+        #             print("Sensor{} force={}".format(i, snake.get_force_magnitude_at(i)))
+        #         print()
+        #
+        # snakeapp.add_event_listener(ReadSensor())
 
 
 def build_scene2():
-
     angle = 0
     for y in [-1, 0, 1]:
 

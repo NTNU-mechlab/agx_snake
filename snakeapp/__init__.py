@@ -7,7 +7,7 @@ import agxCollide
 import osg
 
 from agxRender import Color
-from agxUtil import createTrimeshFromFile
+from agxUtil import createTrimesh
 
 
 def sim() -> agxSDK.Simulation:
@@ -66,7 +66,7 @@ def load_model(path) -> agxCollide.Geometry:
 
 
 def load_shape(path) -> agxCollide.Trimesh:
-    return createTrimeshFromFile(
+    return createTrimesh(
         path, agxCollide.Trimesh.REMOVE_DUPLICATE_VERTICES, agx.Matrix3x3())
 
 
